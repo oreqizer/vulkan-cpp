@@ -49,12 +49,10 @@ if (WIN32)
                 NO_SYSTEM_ENVIRONMENT_PATH)
     endif ()
 elseif (APPLE)
-    set(CMAKE_FIND_FRAMEWORK NEVER)
     find_library(Vulkan_LIBRARY MoltenVK)
-    set(CMAKE_FIND_FRAMEWORK ONLY)
-    find_library(Vulkan_STATIC_LIBRARY MoltenVK)
-    find_path(Vulkan_INCLUDE_DIR NAMES vulkan/vulkan.h HINTS
-            "${Vulkan_LIBRARY}/Headers")
+    find_path(Vulkan_INCLUDE_DIR
+            NAMES vulkan/vulkan.h
+            HINTS "${Vulkan_LIBRARY}/Headers")
 
     # NOT PRETTY BUT A TEMP SOLUTION
     set(Vulkan_INCLUDE_DIR "/usr/local/include/MoltenVK")
