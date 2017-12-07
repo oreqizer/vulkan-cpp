@@ -52,16 +52,15 @@ if (WIN32)
                 )
     endif ()
 elseif (APPLE)
-    # set(CMAKE_FIND_FRAMEWORK NEVER)
-    # find_library(Vulkan_LIBRARY MoltenVK)
-    # set(CMAKE_FIND_FRAMEWORK ONLY)
-    # find_library(Vulkan_STATIC_LIBRARY MoltenVK)
-    # find_path(Vulkan_INCLUDE_DIR NAMES vulkan/vulkan.h HINTS
-    #         "${VULKAN_LIBRARY}/Headers")
-
-    # NOT PRETTY BUT A TEMP SOLUTION
-    set(Vulkan_INCLUDE_DIR "./molten/MoltenVK/macOS/include")
-    find_library(Vulkan_LIBRARY PATHS "./molten/MoltenVK/macOS/MoltenVK.framework")
+    # Download MoltenVK and place it into <PROJECT_ROOT>/molten/MoltenVK
+    find_path(Vulkan_INCLUDE_DIR
+            NAMES vulkan/vulkan.h
+            PATHS
+            "./molten/MoltenVK/include")
+    find_library(Vulkan_LIBRARY
+            NAMES MoltenVK
+            PATHS
+            "./molten/MoltenVK/macOS")
 else ()
     find_path (Vulkan_INCLUDE_DIR
             NAMES vulkan/vulkan.h
