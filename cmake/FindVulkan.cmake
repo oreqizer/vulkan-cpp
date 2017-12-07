@@ -51,13 +51,13 @@ if (WIN32)
 elseif (APPLE)
     # Download MoltenVK and place it into <PROJECT_ROOT>/molten/MoltenVK
     find_library(Vulkan_LIBRARY
-            NAMES MoltenVK
+            NAMES libMoltenVK.dylib
             PATHS
-            "./molten/MoltenVK/macOS")
+            "${CMAKE_SOURCE_DIR}/molten/MoltenVK/macOS")
     find_path(Vulkan_INCLUDE_DIR
             NAMES vulkan/vulkan.h
             PATHS
-            "${Vulkan_LIBRARY}/Headers")
+            "${CMAKE_SOURCE_DIR}/molten/MoltenVK/include")
 else ()
     find_path (Vulkan_INCLUDE_DIR
             NAMES vulkan/vulkan.h
