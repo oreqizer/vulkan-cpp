@@ -17,7 +17,7 @@ if (GLFW3_FOUND)
     target_link_libraries(${PROJECT_NAME} ${GLFW3_STATIC_LIBRARIES})
 endif (GLFW3_FOUND)
 
-# Finding and linking GKM
+# Finding and linking GLM
 pkg_search_module(GLM REQUIRED glm)
 if (GLM_FOUND)
     message(STATUS "Found GLM, Including and Linking now")
