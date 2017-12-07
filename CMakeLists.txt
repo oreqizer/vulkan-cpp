@@ -18,12 +18,12 @@ if (GLFW3_FOUND)
 endif (GLFW3_FOUND)
 
 # Finding and linking GKM
-pkg_search_module(GKM REQUIRED glm)
-if (GKM_FOUND)
+pkg_search_module(GLM REQUIRED glm)
+if (GLM_FOUND)
     message(STATUS "Found GLM, Including and Linking now")
-    include_directories(${GKM_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} ${GKM_STATIC_LIBRARIES})
-endif (GKM_FOUND)
+    include_directories(${GLM_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME} ${GLM_STATIC_LIBRARIES})
+endif (GLM_FOUND)
 
 # Finding and linking Vulkan
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
