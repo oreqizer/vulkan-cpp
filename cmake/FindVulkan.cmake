@@ -49,15 +49,15 @@ if (WIN32)
                 NO_SYSTEM_ENVIRONMENT_PATH)
     endif ()
 elseif (APPLE)
-    # Download MoltenVK and place it into <PROJECT_ROOT>/molten/MoltenVK
-    find_library(Vulkan_LIBRARY
-            NAMES MoltenVK
-            PATHS
-            "./molten/MoltenVK/macOS")
-    find_path(Vulkan_INCLUDE_DIR
-            NAMES vulkan/vulkan.h
-            PATHS
+    set(CMAKE_FIND_FRAMEWORK NEVER)
+    find_library(Vulkan_LIBRARY MoltenVK)
+    set(CMAKE_FIND_FRAMEWORK ONLY)
+    find_library(Vulkan_STATIC_LIBRARY MoltenVK)
+    find_path(Vulkan_INCLUDE_DIR NAMES vulkan/vulkan.h HINTS
             "${Vulkan_LIBRARY}/Headers")
+
+    # NOT PRETTY BUT A TEMP SOLUTION
+    set(Vulkan_INCLUDE_DIR "/usr/local/include/MoltenVK")
 else ()
     find_path (Vulkan_INCLUDE_DIR
             NAMES vulkan/vulkan.h
@@ -73,15 +73,6 @@ set(Vulkan_LIBRARIES ${Vulkan_LIBRARY})
 set(Vulkan_INCLUDE_DIRS ${Vulkan_INCLUDE_DIR})
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Vulkan
-        DEFAULT_MSG
-        Vulkan_LIBRARY Vulkan_INCLUDE_DIR)
+find_package_handle_standard_args(Vulkan DEFAULT_MSG Vulkan_LIBRARY Vulkan_INCLUDE_DIR)
 
-mark_as_advanced(Vulkan_INCLUDE_DIR Vulkan_LIBRARY)
-
-if(Vulkan_FOUND AND NOT TARGET Vulkan::Vulkan)
-    add_library(Vulkan::Vulkan UNKNOWN IMPORTED)
-    set_target_properties(Vulkan::Vulkan PROPERTIES
-            IMPORTED_LOCATION "${Vulkan_LIBRARIES}"
-            INTERFACE_INCLUDE_DIRECTORIES "${Vulkan_INCLUDE_DIRS}")
-endif()
+mark_as_advanced(Vulkan_INCLUDE_DIR Vulkan_LIBRARY Vulkan_STATIC_LIBRARY)
