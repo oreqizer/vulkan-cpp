@@ -2,4 +2,5 @@
 .vscode
 bin
 build
+cmake-build-debug
 molten
