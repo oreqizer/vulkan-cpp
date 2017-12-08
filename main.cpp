@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.h>
 
 #include <iostream>
+#include <vector>
 #include <stdexcept>
 #include <functional>
 
@@ -53,7 +54,7 @@ private:
         };
 
         uint32_t glfwExtensionCount = 0;
-        const char ** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
         VkInstanceCreateInfo createInfo = {
                 sType: VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
                 pApplicationInfo: &appInfo,
@@ -71,6 +72,18 @@ private:
         if (result != VK_SUCCESS) {
             throw std::runtime_error("failed to create Vulkan instance");
         }
+
+        // VK Extensions
+        uint32_t extensionCount = 0;
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+
+        std::vector<VkExtensionProperties> extensions(extensionCount);
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+
+        std::cout << "available extensions:" << std::endl;
+        for (const auto& extension : extensions) {
+            std::cout << "\t" << extension.extensionName << std::endl;
+        }
     }
 
     void mainLoop() {
@@ -80,6 +93,7 @@ private:
     }
 
     void cleanup() {
+        vkDestroyInstance(m_instance, nullptr); // 2nd is a custom deallocator
         glfwDestroyWindow(m_window);
         glfwTerminate();
     }
