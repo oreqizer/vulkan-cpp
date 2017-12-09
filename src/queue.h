@@ -9,7 +9,7 @@ namespace queue {
         int graphicsFamily = -1;
         int presentFamily = -1;
 
-        bool isComplete() {
+        inline bool isComplete() {
             return graphicsFamily >= 0 && presentFamily >= 0;
         }
     };
