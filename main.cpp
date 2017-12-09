@@ -353,8 +353,8 @@ private:
         };
 
         if (debug::DEBUG) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
-            createInfo.ppEnabledLayerNames = m_validationLayers.data();
+            createInfo.enabledLayerCount = static_cast<uint32_t>(debug::VALIDATION_LAYERS.size());
+            createInfo.ppEnabledLayerNames = debug::VALIDATION_LAYERS.data();
         } else {
             createInfo.enabledLayerCount = 0;
         }
