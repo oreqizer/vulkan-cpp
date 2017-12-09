@@ -66,12 +66,7 @@ VkPhysicalDevice devices::pickPhysical(VkInstance instance, VkSurfaceKHR surface
     return physicalDevice;
 }
 
-VkDevice devices::setupLogical(
-        VkSurfaceKHR surface,
-        VkPhysicalDevice physicalDevice,
-        VkQueue graphicsQueue,
-        VkQueue presentQueue
-)  {
+devices::Data devices::createLogical(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice)  {
     queue::FamilyIndices indices = queue::findFamilies(surface, physicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -110,14 +105,15 @@ VkDevice devices::setupLogical(
         createInfo.enabledLayerCount = 0;
     }
 
-    VkDevice device;
-    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
+    devices::Data data = {};
+    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &data.device) != VK_SUCCESS) {
         throw std::runtime_error("failed to create logical device!");
     }
 
-    vkGetDeviceQueue(device, static_cast<uint32_t>(indices.graphicsFamily), 0, &graphicsQueue);
-    vkGetDeviceQueue(device, static_cast<uint32_t>(indices.presentFamily), 0, &presentQueue);
-    return device;
+    vkGetDeviceQueue(data.device, static_cast<uint32_t>(indices.graphicsFamily), 0, &data.graphicsQueue);
+    vkGetDeviceQueue(data.device, static_cast<uint32_t>(indices.presentFamily), 0, &data.presentQueue);
+
+    return data;
 }
 
 void devices::destroyLogical(VkDevice device) {

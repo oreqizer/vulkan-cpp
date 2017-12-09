@@ -8,14 +8,15 @@ namespace devices {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     };
 
+    struct Data {
+        VkDevice device;
+        VkQueue graphicsQueue;
+        VkQueue presentQueue;
+    };
+
     VkPhysicalDevice pickPhysical(VkInstance instance, VkSurfaceKHR surface);
 
-    VkDevice setupLogical(
-            VkSurfaceKHR surface,
-            VkPhysicalDevice physicalDevice,
-            VkQueue graphicsQueue,
-            VkQueue presentQueue
-    );
+    Data createLogical(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice);
     void destroyLogical(VkDevice device);
 }
 

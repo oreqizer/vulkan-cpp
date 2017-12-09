@@ -31,13 +31,16 @@ private:
     VkDebugReportCallbackEXT m_callback;
     VkSurfaceKHR m_surface;
     VkPhysicalDevice m_physicalDevice;
+
     VkDevice m_device;
     VkQueue m_graphicsQueue;
     VkQueue m_presentQueue;
+
     VkSwapchainKHR m_swapChain;
     std::vector<VkImage> m_swapChainImages;
     VkFormat m_swapChainImageFormat;
     VkExtent2D m_swapChainExtent;
+
     std::vector<VkImageView> m_swapChainImageViews;
 
     void initWindow() {
@@ -62,7 +65,11 @@ private:
         m_callback = debug::setupCallback(m_instance);
         m_surface = surface::create(m_instance, m_window);
         m_physicalDevice = devices::pickPhysical(m_instance, m_surface);
-        m_device = devices::setupLogical(m_surface, m_physicalDevice, m_graphicsQueue, m_presentQueue);
+
+        auto deviceData = devices::createLogical(m_surface, m_physicalDevice);
+        m_device = deviceData.device;
+        m_graphicsQueue = deviceData.graphicsQueue;
+        m_presentQueue = deviceData.presentQueue;
 
         auto swapchainData = swapchain::setup(m_surface, m_physicalDevice, m_device, WIDTH, HEIGHT);
         m_swapChain = swapchainData.instance;
