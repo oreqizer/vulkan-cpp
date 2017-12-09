@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include <functional>
+#include <set>
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -45,9 +45,10 @@ void destroyDebugReportCallbackEXT(
 
 struct QueueFamilyIndices {
     int graphicsFamily = -1;
+    int presentFamily = -1;
 
     bool isComplete() {
-        return graphicsFamily >= 0;
+        return graphicsFamily >= 0 && presentFamily >= 0;
     }
 };
 
@@ -68,6 +69,7 @@ private:
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
     VkDevice m_device;
     VkQueue m_graphicsQueue;
+    VkQueue m_presentQueue;
 
     const std::vector<const char*> m_validationLayers = {
             "VK_LAYER_LUNARG_standard_validation"
@@ -277,8 +279,14 @@ private:
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-        int i = 0;
+        uint32_t i = 0;
         for (const auto& queueFamily : queueFamilies) {
+            auto presentSupport = static_cast<VkBool32>(false);
+            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_surface, &presentSupport);
+            if (queueFamily.queueCount > 0 && presentSupport) {
+                indices.presentFamily = i;
+            }
+
             if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
                 indices.graphicsFamily = i;
             }
@@ -296,20 +304,30 @@ private:
     void createLogicalDevice() {
         QueueFamilyIndices indices = findQueueFamilies(m_physicalDevice);
 
-        float queuePriority = 1.0f;
-        VkDeviceQueueCreateInfo queueCreateInfo = {
-                .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-                .queueFamilyIndex = static_cast<uint32_t>(indices.graphicsFamily),
-                .queueCount = 1,
-                .pQueuePriorities = &queuePriority,
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+        std::set<uint32_t> uniqueQueueFamilies = {
+                static_cast<uint32_t>(indices.graphicsFamily),
+                static_cast<uint32_t>(indices.presentFamily),
         };
+
+        float queuePriority = 1.0f;
+        for (auto queueFamily : uniqueQueueFamilies) {
+            VkDeviceQueueCreateInfo queueCreateInfo = {
+                    .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+                    .queueFamilyIndex = queueFamily,
+                    .queueCount = 1,
+                    .pQueuePriorities = &queuePriority,
+            };
+
+            queueCreateInfos.push_back(queueCreateInfo);
+        }
 
         VkPhysicalDeviceFeatures deviceFeatures = {};
 
         VkDeviceCreateInfo createInfo = {
                 .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-                .pQueueCreateInfos = &queueCreateInfo,
-                .queueCreateInfoCount = 1,
+                .pQueueCreateInfos = queueCreateInfos.data(),
+                .queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()),
                 .pEnabledFeatures = &deviceFeatures,
                 .enabledExtensionCount = 0,
         };
@@ -326,6 +344,7 @@ private:
         }
 
         vkGetDeviceQueue(m_device, static_cast<uint32_t>(indices.graphicsFamily), 0, &m_graphicsQueue);
+        vkGetDeviceQueue(m_device, static_cast<uint32_t>(indices.presentFamily), 0, &m_presentQueue);
     }
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
