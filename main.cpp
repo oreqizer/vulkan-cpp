@@ -11,6 +11,7 @@
 #include "src/surface.h"
 #include "src/devices.h"
 #include "src/swapchain.h"
+#include "src/views.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -69,7 +70,7 @@ private:
         m_swapChainImageFormat = swapchainData.format;
         m_swapChainExtent = swapchainData.extent;
 
-        createImageViews();
+        m_swapChainImageViews = views::create(m_device, m_swapChainImages, m_swapChainImageFormat);
     }
 
     void mainLoop() {
@@ -79,11 +80,7 @@ private:
     }
 
     void cleanup() {
-        // nulls are custom deallocators
-        for (auto imageView : m_swapChainImageViews) {
-            vkDestroyImageView(m_device, imageView, nullptr);
-        }
-
+        views::destroy(m_device, m_swapChainImageViews);
         swapchain::destroy(m_device, m_swapChain);
         devices::destroyLogical(m_device);
         debug::destroyCallback(m_instance, m_callback);
@@ -91,33 +88,6 @@ private:
         instance::destroy(m_instance);
         glfwDestroyWindow(m_window);
         glfwTerminate();
-    }
-
-    void createImageViews() {
-        m_swapChainImageViews.resize(m_swapChainImages.size());
-
-        int i = 0;
-        for (auto swapChainImage : m_swapChainImages) {
-            VkImageViewCreateInfo createInfo = {
-                    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-                    .image = swapChainImage,
-                    .viewType = VK_IMAGE_VIEW_TYPE_2D,
-                    .format = m_swapChainImageFormat,
-                    .components.r = VK_COMPONENT_SWIZZLE_IDENTITY,
-                    .components.g = VK_COMPONENT_SWIZZLE_IDENTITY,
-                    .components.b = VK_COMPONENT_SWIZZLE_IDENTITY,
-                    .components.a = VK_COMPONENT_SWIZZLE_IDENTITY,
-                    .subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .subresourceRange.baseMipLevel = 0,
-                    .subresourceRange.levelCount = 1,
-                    .subresourceRange.baseArrayLayer = 0,
-                    .subresourceRange.layerCount = 1,
-            };
-
-            if (vkCreateImageView(m_device, &createInfo, nullptr, &m_swapChainImageViews[i++]) != VK_SUCCESS) {
-                throw std::runtime_error("failed to create image views!");
-            }
-        }
     }
 };
 
