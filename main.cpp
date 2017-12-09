@@ -1,5 +1,5 @@
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <vulkan/vulkan.h>
 
 #include <iostream>
 #include <vector>
@@ -11,9 +11,9 @@ const int HEIGHT = 600;
 
 // MoltenVK does not support validation layers
 #if defined(NDEBUG) || defined(__APPLE__)
-    const bool enableValidationLayers = false;
+    const bool g_enableValidationLayers = false;
 #else
-    const bool enableValidationLayers = true;
+    const bool g_enableValidationLayers = true;
 #endif
 
 // DEBUG
@@ -64,6 +64,10 @@ private:
     GLFWwindow* m_window;
     VkInstance m_instance;
     VkDebugReportCallbackEXT m_callback;
+    VkSurfaceKHR m_surface;
+    VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+    VkDevice m_device;
+    VkQueue m_graphicsQueue;
 
     const std::vector<const char*> m_validationLayers = {
             "VK_LAYER_LUNARG_standard_validation"
@@ -89,7 +93,9 @@ private:
     void initVulkan() {
         createInstance();
         setupDebugCallback();
+        createSurface();
         pickPhysicalDevice();
+        createLogicalDevice();
     }
 
     void mainLoop() {
@@ -99,15 +105,18 @@ private:
     }
 
     void cleanup() {
+        // nulls are custom deallocators
+        vkDestroyDevice(m_device, nullptr);
         destroyDebugReportCallbackEXT(m_instance, m_callback, nullptr);
-        vkDestroyInstance(m_instance, nullptr); // 2nd is a custom deallocator
+        vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
+        vkDestroyInstance(m_instance, nullptr);
         glfwDestroyWindow(m_window);
         glfwTerminate();
     }
 
     void createInstance() {
          // DEBUG
-         if (enableValidationLayers && !checkValidationLayerSupport()) {
+         if (g_enableValidationLayers && !checkValidationLayerSupport()) {
              throw std::runtime_error("validation layers requested, but not available!");
          }
 
@@ -131,7 +140,7 @@ private:
         };
 
         // DEBUG
-        if (enableValidationLayers) {
+        if (g_enableValidationLayers) {
             createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
             createInfo.ppEnabledLayerNames = m_validationLayers.data();
         }
@@ -174,7 +183,7 @@ private:
             extensions.push_back(glfwExtensions[i]);
         }
 
-        if (enableValidationLayers) {
+        if (g_enableValidationLayers) {
             extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
         }
 
@@ -207,7 +216,7 @@ private:
     }
 
     void setupDebugCallback() {
-        if (!enableValidationLayers) {
+        if (!g_enableValidationLayers) {
             return;
         }
 
@@ -223,9 +232,13 @@ private:
         }
     }
 
-    void pickPhysicalDevice() {
-        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    void createSurface() {
+        if (glfwCreateWindowSurface(m_instance, m_window, nullptr, &m_surface) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create window surface!");
+        }
+    }
 
+    void pickPhysicalDevice() {
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
         if (deviceCount == 0) {
@@ -237,12 +250,12 @@ private:
 
         for (const auto& device : devices) {
             if (isDeviceSuitable(device)) {
-                physicalDevice = device;
+                m_physicalDevice = device;
                 break;
             }
         }
 
-        if (physicalDevice == VK_NULL_HANDLE) {
+        if (m_physicalDevice == VK_NULL_HANDLE) {
             throw std::runtime_error("failed to find a suitable GPU!");
         }
     }
@@ -278,6 +291,41 @@ private:
         }
 
         return indices;
+    }
+
+    void createLogicalDevice() {
+        QueueFamilyIndices indices = findQueueFamilies(m_physicalDevice);
+
+        float queuePriority = 1.0f;
+        VkDeviceQueueCreateInfo queueCreateInfo = {
+                .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+                .queueFamilyIndex = static_cast<uint32_t>(indices.graphicsFamily),
+                .queueCount = 1,
+                .pQueuePriorities = &queuePriority,
+        };
+
+        VkPhysicalDeviceFeatures deviceFeatures = {};
+
+        VkDeviceCreateInfo createInfo = {
+                .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+                .pQueueCreateInfos = &queueCreateInfo,
+                .queueCreateInfoCount = 1,
+                .pEnabledFeatures = &deviceFeatures,
+                .enabledExtensionCount = 0,
+        };
+
+        if (g_enableValidationLayers) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
+            createInfo.ppEnabledLayerNames = m_validationLayers.data();
+        } else {
+            createInfo.enabledLayerCount = 0;
+        }
+
+        if (vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_device) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create logical device!");
+        }
+
+        vkGetDeviceQueue(m_device, static_cast<uint32_t>(indices.graphicsFamily), 0, &m_graphicsQueue);
     }
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
