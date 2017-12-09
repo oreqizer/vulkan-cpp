@@ -52,6 +52,12 @@ struct QueueFamilyIndices {
     }
 };
 
+struct SwapChainSupportDetails {
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
+};
+
 class HelloTriangleApplication {
 public:
     void Run() {
@@ -72,7 +78,11 @@ private:
     VkQueue m_presentQueue;
 
     const std::vector<const char*> m_validationLayers = {
-            "VK_LAYER_LUNARG_standard_validation"
+            "VK_LAYER_LUNARG_standard_validation",
+    };
+
+    const std::vector<const char*> m_deviceExtensions = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     };
 
     void initWindow() {
@@ -266,8 +276,54 @@ private:
         // normally would also do a feature check here
         // this checks just queue families
         QueueFamilyIndices indices = findQueueFamilies(device);
+        bool extensionsSupported = checkDeviceExtensionSupport(device);
 
-        return indices.isComplete();
+        bool swapChainAdequate = false;
+        if (extensionsSupported) {
+            SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+            swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+        }
+
+        return indices.isComplete() && extensionsSupported && swapChainAdequate;
+    }
+
+    bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
+        uint32_t extensionCount;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+        std::set<std::string> requiredExtensions(m_deviceExtensions.begin(), m_deviceExtensions.end());
+
+        for (const auto& extension : availableExtensions) {
+            requiredExtensions.erase(extension.extensionName);
+        }
+
+        return requiredExtensions.empty();
+    }
+
+    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) {
+        SwapChainSupportDetails details;
+
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_surface, &details.capabilities);
+
+        uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_surface, &formatCount, nullptr);
+        if (formatCount != 0) {
+            details.formats.resize(formatCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_surface, &formatCount, details.formats.data());
+        }
+
+        uint32_t presentModeCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_surface, &presentModeCount, nullptr);
+
+        if (presentModeCount != 0) {
+            details.presentModes.resize(presentModeCount);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_surface, &presentModeCount, details.presentModes.data());
+        }
+
+        return details;
     }
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
@@ -329,7 +385,8 @@ private:
                 .pQueueCreateInfos = queueCreateInfos.data(),
                 .queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()),
                 .pEnabledFeatures = &deviceFeatures,
-                .enabledExtensionCount = 0,
+                .enabledExtensionCount = static_cast<uint32_t>(m_deviceExtensions.size()),
+                .ppEnabledExtensionNames = m_deviceExtensions.data(),
         };
 
         if (g_enableValidationLayers) {
