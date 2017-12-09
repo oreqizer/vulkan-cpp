@@ -81,6 +81,7 @@ private:
     std::vector<VkImage> m_swapChainImages;
     VkFormat m_swapChainImageFormat;
     VkExtent2D m_swapChainExtent;
+    std::vector<VkImageView> m_swapChainImageViews;
 
     const std::vector<const char*> m_validationLayers = {
             "VK_LAYER_LUNARG_standard_validation",
@@ -114,6 +115,7 @@ private:
         pickPhysicalDevice();
         createLogicalDevice();
         createSwapChain();
+        createImageViews();
     }
 
     void mainLoop() {
@@ -124,6 +126,10 @@ private:
 
     void cleanup() {
         // nulls are custom deallocators
+        for (auto imageView : m_swapChainImageViews) {
+            vkDestroyImageView(m_device, imageView, nullptr);
+        }
+
         vkDestroySwapchainKHR(m_device, m_swapChain, nullptr);
         vkDestroyDevice(m_device, nullptr);
         destroyDebugReportCallbackEXT(m_instance, m_callback, nullptr);
@@ -509,6 +515,33 @@ private:
 
         vkGetDeviceQueue(m_device, static_cast<uint32_t>(indices.graphicsFamily), 0, &m_graphicsQueue);
         vkGetDeviceQueue(m_device, static_cast<uint32_t>(indices.presentFamily), 0, &m_presentQueue);
+    }
+
+    void createImageViews() {
+        m_swapChainImageViews.resize(m_swapChainImages.size());
+
+        int i = 0;
+        for (auto swapChainImage : m_swapChainImages) {
+            VkImageViewCreateInfo createInfo = {
+                    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                    .image = swapChainImage,
+                    .viewType = VK_IMAGE_VIEW_TYPE_2D,
+                    .format = m_swapChainImageFormat,
+                    .components.r = VK_COMPONENT_SWIZZLE_IDENTITY,
+                    .components.g = VK_COMPONENT_SWIZZLE_IDENTITY,
+                    .components.b = VK_COMPONENT_SWIZZLE_IDENTITY,
+                    .components.a = VK_COMPONENT_SWIZZLE_IDENTITY,
+                    .subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .subresourceRange.baseMipLevel = 0,
+                    .subresourceRange.levelCount = 1,
+                    .subresourceRange.baseArrayLayer = 0,
+                    .subresourceRange.layerCount = 1,
+            };
+
+            if (vkCreateImageView(m_device, &createInfo, nullptr, &m_swapChainImageViews[i++]) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create image views!");
+            }
+        }
     }
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
