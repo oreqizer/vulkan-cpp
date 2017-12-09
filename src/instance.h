@@ -6,6 +6,7 @@
 
 namespace instance {
     VkInstance create();
+    void destroy(VkInstance instance);
 }
 
 #endif //VULKAN_CPP_INSTANCE_H

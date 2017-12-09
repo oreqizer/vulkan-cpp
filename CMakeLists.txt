@@ -3,7 +3,7 @@ project(vulkan-cpp)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(SOURCE_FILES main.cpp src/instance.cpp src/instance.h src/debug.h src/debug.cpp)
+set(SOURCE_FILES main.cpp src/instance.cpp src/instance.h src/debug.h src/debug.cpp src/surface.cpp src/surface.h)
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 # Setting up PkgConfig

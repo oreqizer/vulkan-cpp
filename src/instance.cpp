@@ -88,3 +88,7 @@ VkInstance instance::create() {
 
     return instance;
 }
+
+void instance::destroy(VkInstance instance) {
+    vkDestroyInstance(instance, nullptr);
+}

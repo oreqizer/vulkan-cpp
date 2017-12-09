@@ -8,6 +8,7 @@
 
 #include "src/debug.h"
 #include "src/instance.h"
+#include "src/surface.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -51,10 +52,6 @@ private:
     VkExtent2D m_swapChainExtent;
     std::vector<VkImageView> m_swapChainImageViews;
 
-    const std::vector<const char*> m_validationLayers = {
-            "VK_LAYER_LUNARG_standard_validation",
-    };
-
     const std::vector<const char*> m_deviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     };
@@ -79,7 +76,7 @@ private:
     void initVulkan() {
         m_instance = instance::create();
         m_callback = debug::setupCallback(m_instance);
-        createSurface();
+        m_surface = surface::create(m_instance, m_window);
         pickPhysicalDevice();
         createLogicalDevice();
         createSwapChain();
@@ -101,16 +98,10 @@ private:
         vkDestroySwapchainKHR(m_device, m_swapChain, nullptr);
         vkDestroyDevice(m_device, nullptr);
         debug::destroyCallback(m_instance, m_callback);
-        vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
-        vkDestroyInstance(m_instance, nullptr);
+        surface::destroy(m_instance, m_surface);
+        instance::destroy(m_instance);
         glfwDestroyWindow(m_window);
         glfwTerminate();
-    }
-
-    void createSurface() {
-        if (glfwCreateWindowSurface(m_instance, m_window, nullptr, &m_surface) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create window surface!");
-        }
     }
 
     void pickPhysicalDevice() {
