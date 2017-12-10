@@ -23,10 +23,19 @@ void commands::destroyPool(VkDevice device, VkCommandPool pool) {
     vkDestroyCommandPool(device, pool, nullptr);
 }
 
-std::vector<VkCommandBuffer> commands::createBuffers(VkDevice device) {
+std::vector<VkCommandBuffer> commands::createBuffers(VkDevice device, VkCommandPool pool, uint64_t count) {
+    std::vector<VkCommandBuffer> buffers(count);
 
-}
+    VkCommandBufferAllocateInfo allocInfo = {
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            .commandPool = pool,
+            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            .commandBufferCount = static_cast<uint32_t>(count),
+    };
 
-void commands::destroyBuffers(VkDevice device, std::vector<VkCommandBuffer> buffers) {
+    if (vkAllocateCommandBuffers(device, &allocInfo, buffers.data()) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate command buffers!");
+    }
 
+    return buffers;
 }

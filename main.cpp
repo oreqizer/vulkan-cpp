@@ -97,7 +97,7 @@ private:
 
         m_framebuffers = framebuffers::create(m_device, m_swapChainExtent, m_swapChainImageViews, m_renderPass);
         m_commandPool = commands::createPool(m_surface, m_physicalDevice, m_device);
-        m_commandBuffers = commands::createBuffers(m_device);
+        m_commandBuffers = commands::createBuffers(m_device, m_commandPool, m_framebuffers.size());
     }
 
     void mainLoop() {
@@ -107,7 +107,6 @@ private:
     }
 
     void cleanup() {
-        commands::destroyBuffers(m_device, m_commandBuffers);
         commands::destroyPool(m_device, m_commandPool);
         framebuffers::destroy(m_device, m_framebuffers);
         pipeline::destroy(m_device, m_pipelineLayout, m_pipeline);

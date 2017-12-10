@@ -7,8 +7,7 @@
 namespace commands {
     VkCommandPool createPool(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device);
     void destroyPool(VkDevice device, VkCommandPool pool);
-    std::vector<VkCommandBuffer> createBuffers(VkDevice device);
-    void destroyBuffers(VkDevice device, std::vector<VkCommandBuffer> buffers);
+    std::vector<VkCommandBuffer> createBuffers(VkDevice device, VkCommandPool pool, uint64_t count);
 }
 
 #endif //VULKAN_CPP_COMMANDS_H
