@@ -13,6 +13,7 @@
 #include "src/swapchain.h"
 #include "src/views.h"
 #include "src/pipeline.h"
+#include "src/framebuffers.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -42,11 +43,13 @@ private:
     VkFormat m_swapChainImageFormat;
     VkExtent2D m_swapChainExtent;
 
+    std::vector<VkImageView> m_swapChainImageViews;
+
     VkRenderPass m_renderPass;
     VkPipelineLayout m_pipelineLayout;
     VkPipeline m_pipeline;
 
-    std::vector<VkImageView> m_swapChainImageViews;
+    std::vector<VkFramebuffer> m_framebuffers;
 
     void initWindow() {
         glfwInit();
@@ -88,6 +91,8 @@ private:
         auto pipelineData = pipeline::create(m_device, m_swapChainExtent, m_renderPass);
         m_pipelineLayout = pipelineData.layout;
         m_pipeline = pipelineData.instance;
+
+        m_framebuffers = framebuffers::create(m_device);
     }
 
     void mainLoop() {
@@ -97,6 +102,7 @@ private:
     }
 
     void cleanup() {
+        framebuffers::destroy(m_device, m_framebuffers);
         pipeline::destroy(m_device, m_pipelineLayout, m_pipeline);
         pipeline::destroyRenderPass(m_device, m_renderPass);
         views::destroy(m_device, m_swapChainImageViews);
