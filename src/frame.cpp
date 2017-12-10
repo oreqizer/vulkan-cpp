@@ -5,6 +5,7 @@
 void frame::draw(
         VkDevice device,
         VkQueue graphicsQueue,
+        VkQueue presentQueue,
         VkSwapchainKHR swapchain,
         std::vector<VkCommandBuffer> buffers,
         VkSemaphore semaphoreImageAvailable,
@@ -38,4 +39,18 @@ void frame::draw(
     if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
+
+    VkSwapchainKHR swapChains[] = {swapchain};
+    VkPresentInfoKHR presentInfo = {
+            .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+            .waitSemaphoreCount = 1,
+            .pWaitSemaphores = signalSemaphores,
+            .swapchainCount = 1,
+            .pSwapchains = swapChains,
+            .pImageIndices = &imageIndex,
+            .pResults = nullptr, // optional
+    };
+
+    vkQueuePresentKHR(presentQueue, &presentInfo);
+    vkQueueWaitIdle(presentQueue); // sync with the GPU
 }

@@ -8,6 +8,7 @@ namespace frame {
     void draw(
             VkDevice device,
             VkQueue graphicsQueue,
+            VkQueue presentQueue,
             VkSwapchainKHR swapchain,
             std::vector<VkCommandBuffer> buffers,
             VkSemaphore semaphoreImageAvailable,

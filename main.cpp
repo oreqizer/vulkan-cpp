@@ -16,6 +16,7 @@
 #include "src/framebuffers.h"
 #include "src/commands.h"
 #include "src/semaphore.h"
+#include "src/frame.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -118,7 +119,19 @@ private:
     void mainLoop() {
         while (!glfwWindowShouldClose(m_window)) {
             glfwPollEvents();
+            frame::draw(
+                    m_device,
+                    m_graphicsQueue,
+                    m_presentQueue,
+                    m_swapchain,
+                    m_commandBuffers,
+                    m_semaphoreImageAvailable,
+                    m_semaphoreRenderFinished
+            );
         }
+
+        // frame::draw has async operations, this waits for them
+        vkDeviceWaitIdle(m_device);
     }
 
     void cleanup() {
