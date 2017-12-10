@@ -96,7 +96,7 @@ private:
         m_pipeline = pipelineData.instance;
 
         m_framebuffers = framebuffers::create(m_device, m_swapChainExtent, m_swapChainImageViews, m_renderPass);
-        m_commandPool = commands::createPool(m_device);
+        m_commandPool = commands::createPool(m_surface, m_physicalDevice, m_device);
         m_commandBuffers = commands::createBuffers(m_device);
     }
 
