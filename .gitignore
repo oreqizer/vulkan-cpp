@@ -3,4 +3,7 @@
 bin
 build
 cmake-build-debug
-molten
+lib
+
+# generated shaders
+spv

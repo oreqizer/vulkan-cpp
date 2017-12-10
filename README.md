@@ -10,7 +10,9 @@ Make sure you're using **CMake** for building! Then install:
 
 ### Mac
 
-Download **MoltenVK** and place it into `<PROJECT_ROOT>/molten/MoltenVK`. You also need to install **GLFW** version **3.3** and higher due to the added MoltenVK support.
+Download **MoltenVK** and place it into `<PROJECT_ROOT>/lib/MoltenVK`. You also need to install **GLFW** version **3.3** and higher due to the added MoltenVK support.
+
+Download **glslang** and make `glslangValidator` an executable by adding it to `/usr/local/bin`.
 
 ### Linux
 

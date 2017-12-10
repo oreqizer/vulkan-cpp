@@ -12,6 +12,7 @@
 #include "src/devices.h"
 #include "src/swapchain.h"
 #include "src/views.h"
+#include "src/pipeline.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -78,6 +79,7 @@ private:
         m_swapChainExtent = swapchainData.extent;
 
         m_swapChainImageViews = views::create(m_device, m_swapChainImages, m_swapChainImageFormat);
+        pipeline::create();
     }
 
     void mainLoop() {
@@ -87,6 +89,7 @@ private:
     }
 
     void cleanup() {
+        pipeline::destroy();
         views::destroy(m_device, m_swapChainImageViews);
         swapchain::destroy(m_device, m_swapChain);
         devices::destroyLogical(m_device);
