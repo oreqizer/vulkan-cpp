@@ -4,10 +4,15 @@
 #include <vulkan/vulkan.h>
 
 namespace pipeline {
+    struct Data {
+        VkPipelineLayout layout;
+        VkPipeline instance;
+    };
+
     VkRenderPass createRenderPass(VkDevice device, VkFormat format);
     void destroyRenderPass(VkDevice device, VkRenderPass renderPass);
-    VkPipelineLayout createLayout(VkDevice device, VkExtent2D extent);
-    void destroyLayout(VkDevice device, VkPipelineLayout layout);
+    Data create(VkDevice device, VkExtent2D extent, VkRenderPass renderPass);
+    void destroy(VkDevice device, VkPipelineLayout layout, VkPipeline pipeline);
 }
 
 #endif //VULKAN_CPP_PIPELINE_H

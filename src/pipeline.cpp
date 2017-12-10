@@ -76,7 +76,7 @@ void pipeline::destroyRenderPass(VkDevice device, VkRenderPass renderPass) {
     vkDestroyRenderPass(device, renderPass, nullptr);
 }
 
-VkPipelineLayout pipeline::createLayout(VkDevice device, VkExtent2D extent) {
+pipeline::Data pipeline::create(VkDevice device, VkExtent2D extent, VkRenderPass renderPass) {
     auto vertShaderCode = loadShader("../spv/vert.spv");
     auto fragShaderCode = loadShader("../spv/frag.spv");
 
@@ -160,8 +160,6 @@ VkPipelineLayout pipeline::createLayout(VkDevice device, VkExtent2D extent) {
             .alphaToOneEnable = VK_FALSE, // optional
     };
 
-    VkPipelineDepthStencilStateCreateInfo depthStencilInfo = nullptr; // later
-
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {
             .colorWriteMask =
                 VK_COLOR_COMPONENT_R_BIT |
@@ -199,7 +197,6 @@ VkPipelineLayout pipeline::createLayout(VkDevice device, VkExtent2D extent) {
             .blendConstants[3] = 0.0f, // optional
     };
 
-    VkPipelineDynamicStateCreateInfo dynamicState = nullptr; // no dynamic state
     // example of specifying dynamically adjustable values:
     //
     // VkDynamicState dynamicStates[] = {
@@ -220,8 +217,8 @@ VkPipelineLayout pipeline::createLayout(VkDevice device, VkExtent2D extent) {
             .pPushConstantRanges = 0, // optional
     };
 
-    VkPipelineLayout layout;
-    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &layout) != VK_SUCCESS) {
+    pipeline::Data data = {};
+    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &data.layout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
     }
 
@@ -229,9 +226,40 @@ VkPipelineLayout pipeline::createLayout(VkDevice device, VkExtent2D extent) {
     vkDestroyShaderModule(device, vertShader, nullptr);
     vkDestroyShaderModule(device, fragShader, nullptr);
 
-    return layout;
+    VkGraphicsPipelineCreateInfo pipelineInfo = {
+            .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+            .stageCount = 2,
+            .pStages = shaderStages,
+            .pVertexInputState = &vertexInputInfo,
+            .pInputAssemblyState = &assemblyInputInfo,
+            .pViewportState = &viewportInfo,
+            .pRasterizationState = &rasterizerInfo,
+            .pMultisampleState = &multisamplingInfo,
+            .pDepthStencilState = nullptr, // optional
+            .pColorBlendState = &colorBlendInfo,
+            .pDynamicState = nullptr, // optional
+            .layout = data.layout,
+            .renderPass = renderPass,
+            .subpass = 0,
+    };
+
+    auto state = vkCreateGraphicsPipelines(
+            device,
+            VK_NULL_HANDLE, // optional cache object
+            1,              // number of creation infos
+            &pipelineInfo,
+            nullptr,
+            &data.instance
+    );
+
+    if (state != VK_SUCCESS) {
+        throw std::runtime_error("failed to create graphics pipeline!");
+    }
+
+    return data;
 }
 
-void pipeline::destroyLayout(VkDevice device, VkPipelineLayout layout) {
+void pipeline::destroy(VkDevice device, VkPipelineLayout layout, VkPipeline pipeline) {
     vkDestroyPipelineLayout(device, layout, nullptr);
+    vkDestroyPipeline(device, pipeline, nullptr);
 }

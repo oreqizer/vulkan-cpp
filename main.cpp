@@ -44,6 +44,7 @@ private:
 
     VkRenderPass m_renderPass;
     VkPipelineLayout m_pipelineLayout;
+    VkPipeline m_pipeline;
 
     std::vector<VkImageView> m_swapChainImageViews;
 
@@ -83,7 +84,10 @@ private:
 
         m_swapChainImageViews = views::create(m_device, m_swapChainImages, m_swapChainImageFormat);
         m_renderPass = pipeline::createRenderPass(m_device, m_swapChainImageFormat);
-        m_pipelineLayout = pipeline::createLayout(m_device, m_swapChainExtent);
+
+        auto pipelineData = pipeline::create(m_device, m_swapChainExtent, m_renderPass);
+        m_pipelineLayout = pipelineData.layout;
+        m_pipeline = pipelineData.instance;
     }
 
     void mainLoop() {
@@ -93,7 +97,7 @@ private:
     }
 
     void cleanup() {
-        pipeline::destroyLayout(m_device, m_pipelineLayout);
+        pipeline::destroy(m_device, m_pipelineLayout, m_pipeline);
         pipeline::destroyRenderPass(m_device, m_renderPass);
         views::destroy(m_device, m_swapChainImageViews);
         swapchain::destroy(m_device, m_swapChain);
