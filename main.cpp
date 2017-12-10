@@ -14,6 +14,7 @@
 #include "src/views.h"
 #include "src/pipeline.h"
 #include "src/framebuffers.h"
+#include "src/commands.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -50,6 +51,8 @@ private:
     VkPipeline m_pipeline;
 
     std::vector<VkFramebuffer> m_framebuffers;
+    VkCommandPool m_commandPool;
+    std::vector<VkCommandBuffer> m_commandBuffers;
 
     void initWindow() {
         glfwInit();
@@ -93,6 +96,8 @@ private:
         m_pipeline = pipelineData.instance;
 
         m_framebuffers = framebuffers::create(m_device, m_swapChainExtent, m_swapChainImageViews, m_renderPass);
+        m_commandPool = commands::createPool(m_device);
+        m_commandBuffers = commands::createBuffers(m_device);
     }
 
     void mainLoop() {
@@ -102,6 +107,8 @@ private:
     }
 
     void cleanup() {
+        commands::destroyBuffers(m_device, m_commandBuffers);
+        commands::destroyPool(m_device, m_commandPool);
         framebuffers::destroy(m_device, m_framebuffers);
         pipeline::destroy(m_device, m_pipelineLayout, m_pipeline);
         pipeline::destroyRenderPass(m_device, m_renderPass);
