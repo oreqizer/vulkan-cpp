@@ -31,6 +31,51 @@ namespace {
     }
 }
 
+VkRenderPass pipeline::createRenderPass(VkDevice device, VkFormat format) {
+    VkAttachmentDescription colorAttachment = {
+            .format = format,
+            .samples = VK_SAMPLE_COUNT_1_BIT,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    };
+
+    // index used in `layout(location = 0) out vec4 outColor`
+    // in the fragment shader
+    VkAttachmentReference colorAttachmentRef = {
+            .attachment = 0,
+            .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    };
+
+    VkSubpassDescription subpass = {
+            .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+            .colorAttachmentCount = 1,
+            .pColorAttachments = &colorAttachmentRef,
+    };
+
+    VkRenderPassCreateInfo renderPassInfo = {
+            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+            .attachmentCount = 1,
+            .pAttachments = &colorAttachment,
+            .subpassCount = 1,
+            .pSubpasses = &subpass,
+    };
+
+    VkRenderPass renderPass;
+    if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create render pass!");
+    }
+
+    return renderPass;
+}
+
+void pipeline::destroyRenderPass(VkDevice device, VkRenderPass renderPass) {
+    vkDestroyRenderPass(device, renderPass, nullptr);
+}
+
 VkPipelineLayout pipeline::createLayout(VkDevice device, VkExtent2D extent) {
     auto vertShaderCode = loadShader("../spv/vert.spv");
     auto fragShaderCode = loadShader("../spv/frag.spv");
@@ -187,6 +232,6 @@ VkPipelineLayout pipeline::createLayout(VkDevice device, VkExtent2D extent) {
     return layout;
 }
 
-void pipeline::destroy(VkPipelineLayout layout) {
-
+void pipeline::destroyLayout(VkDevice device, VkPipelineLayout layout) {
+    vkDestroyPipelineLayout(device, layout, nullptr);
 }
