@@ -5,7 +5,12 @@
 #include <vulkan/vulkan.h>
 
 namespace framebuffers {
-    std::vector<VkFramebuffer> create(VkDevice device);
+    std::vector<VkFramebuffer> create(
+            VkDevice device,
+            VkExtent2D extent,
+            std::vector<VkImageView> views,
+            VkRenderPass renderPass
+    );
     void destroy(VkDevice device, std::vector<VkFramebuffer> framebuffers);
 }
 

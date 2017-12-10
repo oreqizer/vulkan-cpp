@@ -92,7 +92,7 @@ private:
         m_pipelineLayout = pipelineData.layout;
         m_pipeline = pipelineData.instance;
 
-        m_framebuffers = framebuffers::create(m_device);
+        m_framebuffers = framebuffers::create(m_device, m_swapChainExtent, m_swapChainImageViews, m_renderPass);
     }
 
     void mainLoop() {
