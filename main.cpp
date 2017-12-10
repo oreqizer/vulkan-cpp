@@ -42,6 +42,8 @@ private:
     VkFormat m_swapChainImageFormat;
     VkExtent2D m_swapChainExtent;
 
+    VkPipelineLayout m_pipelineLayout;
+
     std::vector<VkImageView> m_swapChainImageViews;
 
     void initWindow() {
@@ -79,7 +81,7 @@ private:
         m_swapChainExtent = swapchainData.extent;
 
         m_swapChainImageViews = views::create(m_device, m_swapChainImages, m_swapChainImageFormat);
-        pipeline::create(m_device);
+        m_pipelineLayout = pipeline::createLayout(m_device, m_swapChainExtent);
     }
 
     void mainLoop() {
@@ -89,7 +91,7 @@ private:
     }
 
     void cleanup() {
-        pipeline::destroy();
+        pipeline::destroy(m_pipelineLayout);
         views::destroy(m_device, m_swapChainImageViews);
         swapchain::destroy(m_device, m_swapChain);
         devices::destroyLogical(m_device);

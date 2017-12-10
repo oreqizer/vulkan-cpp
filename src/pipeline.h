@@ -4,8 +4,8 @@
 #include <vulkan/vulkan.h>
 
 namespace pipeline {
-    void create(VkDevice device);
-    void destroy();
+    VkPipelineLayout createLayout(VkDevice device, VkExtent2D extent);
+    void destroy(VkPipelineLayout layout);
 }
 
 #endif //VULKAN_CPP_PIPELINE_H
