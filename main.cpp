@@ -97,7 +97,15 @@ private:
 
         m_framebuffers = framebuffers::create(m_device, m_swapChainExtent, m_swapChainImageViews, m_renderPass);
         m_commandPool = commands::createPool(m_surface, m_physicalDevice, m_device);
-        m_commandBuffers = commands::createBuffers(m_device, m_commandPool, m_framebuffers.size());
+        m_commandBuffers = commands::createBuffers(
+                m_device,
+                m_swapChainExtent,
+                m_renderPass,
+                m_pipeline,
+                m_framebuffers,
+                m_commandPool,
+                m_framebuffers.size()
+        );
     }
 
     void mainLoop() {
