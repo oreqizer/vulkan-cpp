@@ -214,7 +214,7 @@ pipeline::Data pipeline::create(VkDevice device, VkExtent2D extent, VkRenderPass
             .setLayoutCount = 0, // optional
             .pSetLayouts = nullptr, // optional
             .pushConstantRangeCount = 0, // optional
-            .pPushConstantRanges = 0, // optional
+            .pPushConstantRanges = nullptr, // optional
     };
 
     pipeline::Data data = {};
