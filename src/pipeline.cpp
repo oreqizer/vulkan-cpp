@@ -176,13 +176,13 @@ pipeline::Data pipeline::create(VkDevice device, VkExtent2D extent, VkRenderPass
             // pseudocode of that the following setting does:
             // finalColor.rgb = newAlpha * newColor + (1 - newAlpha) * oldColor;
             // finalColor.a = newAlpha.a;
-            .blendEnable = VK_TRUE,
-            .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
-            .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-            .colorBlendOp = VK_BLEND_OP_ADD,
-            .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
-            .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
-            .alphaBlendOp = VK_BLEND_OP_ADD,
+            // .blendEnable = VK_TRUE,
+            // .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
+            // .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+            // .colorBlendOp = VK_BLEND_OP_ADD,
+            // .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
+            // .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+            // .alphaBlendOp = VK_BLEND_OP_ADD,
     };
 
     VkPipelineColorBlendStateCreateInfo colorBlendInfo = {
@@ -241,6 +241,8 @@ pipeline::Data pipeline::create(VkDevice device, VkExtent2D extent, VkRenderPass
             .layout = data.layout,
             .renderPass = renderPass,
             .subpass = 0,
+            .basePipelineHandle = VK_NULL_HANDLE, // optional
+            .basePipelineIndex = -1, // optional
     };
 
     auto state = vkCreateGraphicsPipelines(
