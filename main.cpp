@@ -40,12 +40,12 @@ private:
     VkQueue m_graphicsQueue;
     VkQueue m_presentQueue;
 
-    VkSwapchainKHR m_swapChain;
-    std::vector<VkImage> m_swapChainImages;
-    VkFormat m_swapChainImageFormat;
-    VkExtent2D m_swapChainExtent;
+    VkSwapchainKHR m_swapchain;
+    std::vector<VkImage> m_swapchainImages;
+    VkFormat m_swapchainImageFormat;
+    VkExtent2D m_swapchainExtent;
 
-    std::vector<VkImageView> m_swapChainImageViews;
+    std::vector<VkImageView> m_swapchainImageViews;
 
     VkRenderPass m_renderPass;
     VkPipelineLayout m_pipelineLayout;
@@ -87,23 +87,23 @@ private:
         m_presentQueue = deviceData.presentQueue;
 
         auto swapchainData = swapchain::setup(m_surface, m_physicalDevice, m_device, WIDTH, HEIGHT);
-        m_swapChain = swapchainData.instance;
-        m_swapChainImages = swapchainData.images;
-        m_swapChainImageFormat = swapchainData.format;
-        m_swapChainExtent = swapchainData.extent;
+        m_swapchain = swapchainData.instance;
+        m_swapchainImages = swapchainData.images;
+        m_swapchainImageFormat = swapchainData.format;
+        m_swapchainExtent = swapchainData.extent;
 
-        m_swapChainImageViews = views::create(m_device, m_swapChainImages, m_swapChainImageFormat);
-        m_renderPass = pipeline::createRenderPass(m_device, m_swapChainImageFormat);
+        m_swapchainImageViews = views::create(m_device, m_swapchainImages, m_swapchainImageFormat);
+        m_renderPass = pipeline::createRenderPass(m_device, m_swapchainImageFormat);
 
-        auto pipelineData = pipeline::create(m_device, m_swapChainExtent, m_renderPass);
+        auto pipelineData = pipeline::create(m_device, m_swapchainExtent, m_renderPass);
         m_pipelineLayout = pipelineData.layout;
         m_pipeline = pipelineData.instance;
 
-        m_framebuffers = framebuffers::create(m_device, m_swapChainExtent, m_swapChainImageViews, m_renderPass);
+        m_framebuffers = framebuffers::create(m_device, m_swapchainExtent, m_swapchainImageViews, m_renderPass);
         m_commandPool = commands::createPool(m_surface, m_physicalDevice, m_device);
         m_commandBuffers = commands::createBuffers(
                 m_device,
-                m_swapChainExtent,
+                m_swapchainExtent,
                 m_renderPass,
                 m_pipeline,
                 m_framebuffers,
@@ -128,8 +128,8 @@ private:
         framebuffers::destroy(m_device, m_framebuffers);
         pipeline::destroy(m_device, m_pipelineLayout, m_pipeline);
         pipeline::destroyRenderPass(m_device, m_renderPass);
-        views::destroy(m_device, m_swapChainImageViews);
-        swapchain::destroy(m_device, m_swapChain);
+        views::destroy(m_device, m_swapchainImageViews);
+        swapchain::destroy(m_device, m_swapchain);
         devices::destroyLogical(m_device);
         debug::destroyCallback(m_instance, m_callback);
         surface::destroy(m_instance, m_surface);
