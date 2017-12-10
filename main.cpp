@@ -79,7 +79,7 @@ private:
         m_swapChainExtent = swapchainData.extent;
 
         m_swapChainImageViews = views::create(m_device, m_swapChainImages, m_swapChainImageFormat);
-        pipeline::create();
+        pipeline::create(m_device);
     }
 
     void mainLoop() {
