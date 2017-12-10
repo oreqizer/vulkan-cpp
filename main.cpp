@@ -15,6 +15,7 @@
 #include "src/pipeline.h"
 #include "src/framebuffers.h"
 #include "src/commands.h"
+#include "src/semaphore.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -53,6 +54,9 @@ private:
     std::vector<VkFramebuffer> m_framebuffers;
     VkCommandPool m_commandPool;
     std::vector<VkCommandBuffer> m_commandBuffers;
+
+    VkSemaphore m_semaphoreImageAvailable;
+    VkSemaphore m_semaphoreRenderFinished;
 
     void initWindow() {
         glfwInit();
@@ -106,6 +110,9 @@ private:
                 m_commandPool,
                 m_framebuffers.size()
         );
+
+        m_semaphoreImageAvailable = semaphore::create(m_device);
+        m_semaphoreRenderFinished = semaphore::create(m_device);
     }
 
     void mainLoop() {
@@ -115,6 +122,8 @@ private:
     }
 
     void cleanup() {
+        semaphore::destroy(m_device, m_semaphoreRenderFinished);
+        semaphore::destroy(m_device, m_semaphoreImageAvailable);
         commands::destroyPool(m_device, m_commandPool);
         framebuffers::destroy(m_device, m_framebuffers);
         pipeline::destroy(m_device, m_pipelineLayout, m_pipeline);
