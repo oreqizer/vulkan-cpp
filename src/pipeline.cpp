@@ -222,10 +222,6 @@ pipeline::Data pipeline::create(VkDevice device, VkExtent2D extent, VkRenderPass
         throw std::runtime_error("failed to create pipeline layout!");
     }
 
-    // cleanup shader modules
-    vkDestroyShaderModule(device, vertShader, nullptr);
-    vkDestroyShaderModule(device, fragShader, nullptr);
-
     VkGraphicsPipelineCreateInfo pipelineInfo = {
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
             .stageCount = 2,
@@ -257,6 +253,10 @@ pipeline::Data pipeline::create(VkDevice device, VkExtent2D extent, VkRenderPass
     if (state != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline!");
     }
+
+    // cleanup shader modules
+    vkDestroyShaderModule(device, vertShader, nullptr);
+    vkDestroyShaderModule(device, fragShader, nullptr);
 
     return data;
 }
