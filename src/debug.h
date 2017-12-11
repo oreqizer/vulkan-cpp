@@ -1,16 +1,18 @@
 #ifndef VULKAN_CPP_DEBUG_H
 #define VULKAN_CPP_DEBUG_H
 
-// MoltenVK does not support validation layers
-#if defined(NDEBUG) || defined(__APPLE__)
-    const bool DEBUG = false;
+#ifdef __APPLE__
+    const bool APPLE = true;
 #else
-    const bool DEBUG = true;
+    const bool APPLE = false;
 #endif
 
 #ifdef NDEBUG
+    const bool DEBUG = false;
     const bool VERBOSE = false;
 #else
+    // MoltenVK does not support validation layers
+    const bool DEBUG = !APPLE;
     const bool VERBOSE = true;
 #endif
 
