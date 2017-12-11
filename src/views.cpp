@@ -3,7 +3,7 @@
 std::vector<VkImageView> views::create(VkDevice device, std::vector<VkImage> images, VkFormat format) {
     std::vector<VkImageView> views(images.size());
 
-    int i = 0;
+    uint32_t i = 0;
     for (auto image : images) {
         VkImageViewCreateInfo createInfo = {
                 .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -21,9 +21,11 @@ std::vector<VkImageView> views::create(VkDevice device, std::vector<VkImage> ima
                 .subresourceRange.layerCount = 1,
         };
 
-        if (vkCreateImageView(device, &createInfo, nullptr, &views[i++]) != VK_SUCCESS) {
+        if (vkCreateImageView(device, &createInfo, nullptr, &views[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to create image views!");
         }
+
+        i++;
     }
 
     return views;
