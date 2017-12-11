@@ -16,6 +16,9 @@
     const bool VERBOSE = true;
 #endif
 
+#include <vector>
+#include <vulkan/vulkan.h>
+
 namespace debug {
     const bool DEBUG = DEBUG;
     const bool VERBOSE = VERBOSE;

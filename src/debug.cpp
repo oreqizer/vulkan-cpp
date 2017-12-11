@@ -1,6 +1,4 @@
 #include <cstdint>
-#include <vulkan/vulkan.h>
-#include <vector>
 #include <iostream>
 
 #include "debug.h"
