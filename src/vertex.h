@@ -7,7 +7,7 @@
 #include <vulkan/vulkan.h>
 
 struct Vertex {
-    Vertex(glm::vec3 po3, glm::vec3 color);
+    Vertex(glm::vec3 pos, glm::vec3 color);
     ~Vertex();
 
     const glm::vec3 pos;
