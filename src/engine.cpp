@@ -147,8 +147,7 @@ void Engine::swapchainRecreate() {
 }
 
 void Engine::swapchainCleanup() {
-    // reusing pool here
-    commands::destroyBuffers(m_device, m_commandPool, m_commandBuffers);
+    commands::destroyBuffers(m_device, m_commandPool, m_commandBuffers); // reusing pool here
     framebuffers::destroy(m_device, m_framebuffers);
     pipeline::destroy(m_device, m_pipelineLayout, m_pipeline);
     pipeline::destroyRenderPass(m_device, m_renderPass);
