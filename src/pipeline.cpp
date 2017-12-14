@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "pipeline.h"
+#include "vertex.h"
 
 namespace {
     std::vector<char> loadShader(const std::string& filename) {
@@ -111,12 +112,14 @@ pipeline::Data pipeline::create(VkDevice device, VkExtent2D extent, VkRenderPass
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
+    auto bindingDescription = vertex::getBindingDescription();
+    auto attributeDescriptions = vertex::getAttributeDescriptions();
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-            .vertexBindingDescriptionCount = 0,
-            .pVertexBindingDescriptions = nullptr, // optional
-            .vertexAttributeDescriptionCount = 0,
-            .pVertexAttributeDescriptions = nullptr, // optional
+            .vertexBindingDescriptionCount = 1,
+            .pVertexBindingDescriptions = &bindingDescription,
+            .vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
+            .pVertexAttributeDescriptions = attributeDescriptions.data(),
     };
 
     VkPipelineInputAssemblyStateCreateInfo assemblyInputInfo = {
