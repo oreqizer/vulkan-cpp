@@ -16,6 +16,7 @@ namespace commands {
             VkCommandPool pool,
             uint64_t count
     );
+    void destroyBuffers(VkDevice device, VkCommandPool pool, std::vector<VkCommandBuffer> buffers);
 }
 
 #endif //VULKAN_CPP_COMMANDS_H

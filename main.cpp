@@ -59,13 +59,20 @@ private:
     VkSemaphore m_semaphoreImageAvailable;
     VkSemaphore m_semaphoreRenderFinished;
 
+    static void onWindowResize(GLFWwindow* window, int width, int height) {
+        if (width == 0 || height == 0) {
+            return;
+        }
+
+        auto* app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
+        app->swapchainRecreate();
+    }
+
     void initWindow() {
         glfwInit();
 
-        // tells GLFW not to enable OpenGL context
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        // no need to resize window for now
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // tells GLFW not to enable OpenGL context
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
         m_window = glfwCreateWindow(
                 WIDTH,
@@ -74,6 +81,9 @@ private:
                 nullptr, // monitor to open the window on
                 nullptr  // something for OpenGL
         );
+
+        glfwSetWindowUserPointer(m_window, this);
+        glfwSetWindowSizeCallback(m_window, HelloTriangleApplication::onWindowResize);
     }
 
     void initVulkan() {
@@ -116,10 +126,59 @@ private:
         m_semaphoreRenderFinished = semaphore::create(m_device);
     }
 
+    void swapchainRecreate() {
+        vkDeviceWaitIdle(m_device);
+
+        swapchainCleanup();
+
+        int width = 0;
+        int height = 0;
+        glfwGetWindowSize(m_window, &width, &height);
+        auto swapchainData = swapchain::setup(
+                m_surface,
+                m_physicalDevice,
+                m_device,
+                static_cast<uint32_t>(width),
+                static_cast<uint32_t>(height)
+        );
+        m_swapchain = swapchainData.instance;
+        m_swapchainImages = swapchainData.images;
+        m_swapchainImageFormat = swapchainData.format;
+        m_swapchainExtent = swapchainData.extent;
+
+        m_swapchainImageViews = views::create(m_device, m_swapchainImages, m_swapchainImageFormat);
+        m_renderPass = pipeline::createRenderPass(m_device, m_swapchainImageFormat);
+
+        auto pipelineData = pipeline::create(m_device, m_swapchainExtent, m_renderPass);
+        m_pipelineLayout = pipelineData.layout;
+        m_pipeline = pipelineData.instance;
+
+        m_framebuffers = framebuffers::create(m_device, m_swapchainExtent, m_swapchainImageViews, m_renderPass);
+        m_commandBuffers = commands::createBuffers(
+                m_device,
+                m_swapchainExtent,
+                m_renderPass,
+                m_pipeline,
+                m_framebuffers,
+                m_commandPool,
+                m_framebuffers.size()
+        );
+    }
+
+    void swapchainCleanup() {
+        // reusing pool here
+        commands::destroyBuffers(m_device, m_commandPool, m_commandBuffers);
+        framebuffers::destroy(m_device, m_framebuffers);
+        pipeline::destroy(m_device, m_pipelineLayout, m_pipeline);
+        pipeline::destroyRenderPass(m_device, m_renderPass);
+        views::destroy(m_device, m_swapchainImageViews);
+        swapchain::destroy(m_device, m_swapchain);
+    }
+
     void mainLoop() {
         while (!glfwWindowShouldClose(m_window)) {
             glfwPollEvents();
-            frame::draw(
+            auto result = frame::draw(
                     m_device,
                     m_graphicsQueue,
                     m_presentQueue,
@@ -128,6 +187,10 @@ private:
                     m_semaphoreImageAvailable,
                     m_semaphoreRenderFinished
             );
+
+            if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+                swapchainRecreate();
+            }
         }
 
         // frame::draw has async operations, this waits for them
@@ -137,12 +200,8 @@ private:
     void cleanup() {
         semaphore::destroy(m_device, m_semaphoreRenderFinished);
         semaphore::destroy(m_device, m_semaphoreImageAvailable);
+        swapchainCleanup();
         commands::destroyPool(m_device, m_commandPool);
-        framebuffers::destroy(m_device, m_framebuffers);
-        pipeline::destroy(m_device, m_pipelineLayout, m_pipeline);
-        pipeline::destroyRenderPass(m_device, m_renderPass);
-        views::destroy(m_device, m_swapchainImageViews);
-        swapchain::destroy(m_device, m_swapchain);
         devices::destroyLogical(m_device);
         debug::destroyCallback(m_instance, m_callback);
         surface::destroy(m_instance, m_surface);

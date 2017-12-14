@@ -79,3 +79,7 @@ std::vector<VkCommandBuffer> commands::createBuffers(
 
     return buffers;
 }
+
+void commands::destroyBuffers(VkDevice device, VkCommandPool pool, std::vector<VkCommandBuffer> buffers) {
+    vkFreeCommandBuffers(device, pool, static_cast<uint32_t>(buffers.size()), buffers.data());
+}

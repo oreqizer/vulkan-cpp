@@ -5,7 +5,7 @@
 #include <vulkan/vulkan.h>
 
 namespace frame {
-    void draw(
+    VkResult draw(
             VkDevice device,
             VkQueue graphicsQueue,
             VkQueue presentQueue,

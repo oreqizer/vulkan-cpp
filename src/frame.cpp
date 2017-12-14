@@ -2,7 +2,7 @@
 
 #include "frame.h"
 
-void frame::draw(
+VkResult frame::draw(
         VkDevice device,
         VkQueue graphicsQueue,
         VkQueue presentQueue,
@@ -12,7 +12,7 @@ void frame::draw(
         VkSemaphore semaphoreRenderFinished
 ) {
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(
+    auto result = vkAcquireNextImageKHR(
             device,
             swapchain,
             std::numeric_limits<uint64_t>::max(), // timeout, uint64_t max means none
@@ -20,6 +20,12 @@ void frame::draw(
             VK_NULL_HANDLE, // fence, none since we're using semaphores
             &imageIndex
     );
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        return VK_ERROR_OUT_OF_DATE_KHR;
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
 
     VkSemaphore waitSemaphores[] = {semaphoreImageAvailable};
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -53,4 +59,6 @@ void frame::draw(
 
     vkQueuePresentKHR(presentQueue, &presentInfo);
     vkQueueWaitIdle(presentQueue); // sync with the GPU
+
+    return result;
 }

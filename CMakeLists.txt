@@ -9,13 +9,13 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 # Setting up PkgConfig
 find_package(PkgConfig REQUIRED)
 
-# Finding and linking GLFW3
-pkg_search_module(GLFW3 3.2 REQUIRED glfw3)
-if (GLFW3_FOUND)
+# Finding and linking GLFW
+pkg_search_module(GLFW REQUIRED glfw3)
+if (GLFW_FOUND)
     message(STATUS "Found GLFW, Including and Linking now")
-    include_directories(${GLFW3_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} ${GLFW3_STATIC_LIBRARIES})
-endif (GLFW3_FOUND)
+    include_directories(${GLFW_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME} ${GLFW_STATIC_LIBRARIES})
+endif (GLFW_FOUND)
 
 # Finding and linking GLM
 pkg_search_module(GLM REQUIRED glm)
