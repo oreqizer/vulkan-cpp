@@ -119,3 +119,16 @@ devices::Data devices::createLogical(VkSurfaceKHR surface, VkPhysicalDevice phys
 void devices::destroyLogical(VkDevice device) {
     vkDestroyDevice(device, nullptr);
 }
+
+uint32_t devices::findMemoryType(VkPhysicalDevice physicalDevice, uint32_t filter, VkMemoryPropertyFlags flags) {
+    VkPhysicalDeviceMemoryProperties properties = {};
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &properties);
+
+    for (uint32_t i = 0; i < properties.memoryTypeCount; i++) {
+        if ((filter & (1 << i)) && (properties.memoryTypes[i].propertyFlags & flags) == flags) {
+            return i;
+        }
+    }
+
+    throw std::runtime_error("failed to find suitable memory type!");
+}

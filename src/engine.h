@@ -57,6 +57,7 @@ private:
     std::vector<VkFramebuffer> m_framebuffers;
     VkCommandPool m_commandPool;
     VkBuffer m_vertexBuffer;
+    VkDeviceMemory m_vertexBufferMemory;
     std::vector<VkCommandBuffer> m_commandBuffers;
 
     VkSemaphore m_semaphoreImageAvailable;

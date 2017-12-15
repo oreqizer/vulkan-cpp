@@ -15,9 +15,9 @@ namespace devices {
     };
 
     VkPhysicalDevice pickPhysical(VkInstance instance, VkSurfaceKHR surface);
-
     Data createLogical(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice);
     void destroyLogical(VkDevice device);
+    uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t filter, VkMemoryPropertyFlags flags);
 }
 
 #endif //VULKAN_CPP_DEVICES_H
