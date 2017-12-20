@@ -30,8 +30,8 @@ std::vector<VkCommandBuffer> commands::createBuffers(
         VkPipeline pipeline,
         std::vector<VkFramebuffer> framebuffers,
         VkCommandPool pool,
-        VkBuffer vertexBuffer,
-        const std::vector<Vertex> vertices,
+        Buffer& vertexBuffer,
+        const std::vector<Vertex>& vertices,
         uint64_t count
 ) {
     std::vector<VkCommandBuffer> buffers(count);
@@ -70,7 +70,7 @@ std::vector<VkCommandBuffer> commands::createBuffers(
         vkCmdBeginRenderPass(buffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-        VkBuffer vertexBuffers[] = {vertexBuffer};
+        VkBuffer vertexBuffers[] = {vertexBuffer.getBuffer()};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(buffer, 0, 1, vertexBuffers, offsets);
 

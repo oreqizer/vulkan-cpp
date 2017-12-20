@@ -34,11 +34,7 @@ Engine::Engine() {
 
     m_framebuffers = framebuffers::create(m_device, m_swapchainExtent, m_swapchainImageViews, m_renderPass);
     m_commandPool = commands::createPool(m_surface, m_physicalDevice, m_device);
-
-    auto vertexData= vertex::createBuffer(m_physicalDevice, m_device, vertices);
-    m_vertexBuffer = vertexData.buffer;
-    m_vertexBufferMemory = vertexData.memory;
-
+    m_vertexBuffer = vertex::createBuffer(m_physicalDevice, m_device, vertices);
     m_commandBuffers = commands::createBuffers(
             m_device,
             m_swapchainExtent,
@@ -46,7 +42,7 @@ Engine::Engine() {
             m_pipeline,
             m_framebuffers,
             m_commandPool,
-            m_vertexBuffer,
+            *m_vertexBuffer,
             vertices,
             m_framebuffers.size()
     );
@@ -59,7 +55,6 @@ Engine::~Engine() {
     semaphore::destroy(m_device, m_semaphoreRenderFinished);
     semaphore::destroy(m_device, m_semaphoreImageAvailable);
     swapchainCleanup();
-    vertex::destroyBuffer(m_device, m_vertexBufferMemory, m_vertexBuffer);
     commands::destroyPool(m_device, m_commandPool);
     devices::destroyLogical(m_device);
     debug::destroyCallback(m_instance, m_callback);
@@ -155,7 +150,7 @@ void Engine::swapchainRecreate() {
             m_pipeline,
             m_framebuffers,
             m_commandPool,
-            m_vertexBuffer,
+            *m_vertexBuffer,
             vertices,
             m_framebuffers.size()
     );

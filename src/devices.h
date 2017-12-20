@@ -1,6 +1,7 @@
 #ifndef VULKAN_CPP_DEVICES_H
 #define VULKAN_CPP_DEVICES_H
 
+#include <vector>
 #include <vulkan/vulkan.h>
 
 namespace devices {

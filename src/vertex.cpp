@@ -7,47 +7,22 @@ Vertex::Vertex(glm::vec3 pos, glm::vec3 color): pos(pos), color(color) {
 
 Vertex::~Vertex() =default;
 
-vertex::Data vertex::createBuffer(VkPhysicalDevice physicalDevice, VkDevice device, std::vector<Vertex> vertices) {
-    VkBufferCreateInfo bufferInfo = {
-            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size = sizeof(vertices[0]) * vertices.size(),
-            .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-    };
-
-    VkBuffer buffer;
-    if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create vertex buffer!");
-    }
-    VkMemoryRequirements requirements = {};
-    vkGetBufferMemoryRequirements(device, buffer, &requirements);
-
-    VkMemoryAllocateInfo allocInfo = {
-            .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-            .allocationSize = requirements.size,
-            .memoryTypeIndex = devices::findMemoryType(
-                    physicalDevice,
-                    requirements.memoryTypeBits,
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-            ),
-    };
-
-    VkDeviceMemory memory;
-    if (vkAllocateMemory(device, &allocInfo, nullptr, &memory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate vertex buffer memory!");
-    }
-
-    vkBindBufferMemory(device, buffer, memory, 0);
+Buffer* vertex::createBuffer(VkPhysicalDevice physicalDevice, VkDevice device, std::vector<Vertex> vertices) {
+    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+    auto buffer = new Buffer(
+            physicalDevice,
+            device,
+            bufferSize,
+            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+    );
 
     void* data;
-    vkMapMemory(device, memory, 0, bufferInfo.size, 0, &data);
-    memcpy(data, vertices.data(), (size_t) bufferInfo.size);
-    vkUnmapMemory(device, memory);
+    vkMapMemory(device, buffer->getMemory(), 0, bufferSize, 0, &data);
+    memcpy(data, vertices.data(), (size_t) bufferSize);
+    vkUnmapMemory(device, buffer->getMemory());
 
-    return {
-            .buffer = buffer,
-            .memory = memory,
-    };
+    return buffer;
 }
 
 void vertex::destroyBuffer(VkDevice device, VkDeviceMemory memory, VkBuffer buffer) {

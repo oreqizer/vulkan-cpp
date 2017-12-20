@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 
+#include "buffer.h"
 #include "debug.h"
 #include "instance.h"
 #include "surface.h"
@@ -56,8 +57,7 @@ private:
 
     std::vector<VkFramebuffer> m_framebuffers;
     VkCommandPool m_commandPool;
-    VkBuffer m_vertexBuffer;
-    VkDeviceMemory m_vertexBufferMemory;
+    Buffer* m_vertexBuffer; // TODO make this by reference
     std::vector<VkCommandBuffer> m_commandBuffers;
 
     VkSemaphore m_semaphoreImageAvailable;

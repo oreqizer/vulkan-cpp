@@ -16,8 +16,8 @@ namespace commands {
             VkPipeline pipeline,
             std::vector<VkFramebuffer> framebuffers,
             VkCommandPool pool,
-            VkBuffer vertexBuffer,
-            std::vector<Vertex> vertices,
+            Buffer& vertexBuffer,
+            const std::vector<Vertex>& vertices,
             uint64_t count
     );
     void destroyBuffers(VkDevice device, VkCommandPool pool, std::vector<VkCommandBuffer> buffers);

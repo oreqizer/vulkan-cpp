@@ -6,6 +6,8 @@
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 
+#include "buffer.h"
+
 struct Vertex {
     Vertex(glm::vec3 pos, glm::vec3 color);
     ~Vertex();
@@ -15,12 +17,7 @@ struct Vertex {
 };
 
 namespace vertex {
-    struct Data {
-        VkBuffer buffer;
-        VkDeviceMemory memory;
-    };
-
-    Data createBuffer(VkPhysicalDevice physicalDevice, VkDevice device, std::vector<Vertex> vertices);
+    Buffer* createBuffer(VkPhysicalDevice physicalDevice, VkDevice device, std::vector<Vertex> vertices);
     void destroyBuffer(VkDevice device, VkDeviceMemory memory, VkBuffer buffer);
     VkVertexInputBindingDescription getBindingDescription();
     std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
