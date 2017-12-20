@@ -3,27 +3,22 @@
 
 #include <vulkan/vulkan.h>
 
+#include "device.h"
+
 class Buffer {
 public:
     Buffer(
-            VkPhysicalDevice physicalDevice,
-            VkDevice device,
+            Device& device,
             VkDeviceSize size,
             VkBufferUsageFlags usage,
             VkMemoryPropertyFlags properties
     );
     ~Buffer();
 
-    inline const auto getBuffer() {
-        return buffer_;
-    }
-
-    inline const auto getMemory() {
-        return memory_;
-    }
-
+    inline const auto getBuffer() { return buffer_; }
+    inline const auto getMemory() { return memory_; }
 private:
-    VkDevice device_;
+    Device& device_;
     VkBuffer buffer_;
     VkDeviceMemory memory_;
 };

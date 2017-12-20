@@ -3,12 +3,16 @@
 #include <set>
 #include <string>
 
-#include "devices.h"
-#include "debug.h"
+#include "device.h"
 #include "queue.h"
 #include "swapchain.h"
+#include "debug.h"
 
 namespace {
+    const std::vector<const char*> EXTENSIONS = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    };
+
     bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
@@ -16,7 +20,7 @@ namespace {
         std::vector<VkExtensionProperties> availableExtensions(extensionCount);
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-        std::set<std::string> requiredExtensions(devices::EXTENSIONS.begin(), devices::EXTENSIONS.end());
+        std::set<std::string> requiredExtensions(EXTENSIONS.begin(), EXTENSIONS.end());
 
         for (const auto& extension : availableExtensions) {
             requiredExtensions.erase(extension.extensionName);
@@ -31,17 +35,17 @@ namespace {
         queue::FamilyIndices indices = queue::findFamilies(surface, device);
         bool extensionsSupported = checkDeviceExtensionSupport(device);
 
-        bool swapChainAdequate = false;
+        bool swapchainAdequate = false;
         if (extensionsSupported) {
             swapchain::SupportDetails swapChainSupport = swapchain::querySupport(surface, device);
-            swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+            swapchainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
         }
 
-        return indices.isComplete() && extensionsSupported && swapChainAdequate;
+        return indices.isComplete() && extensionsSupported && swapchainAdequate;
     }
 }
 
-VkPhysicalDevice devices::pickPhysical(VkInstance instance, VkSurfaceKHR surface) {
+Device::Device(VkInstance instance, VkSurfaceKHR surface) {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
     if (deviceCount == 0) {
@@ -63,10 +67,6 @@ VkPhysicalDevice devices::pickPhysical(VkInstance instance, VkSurfaceKHR surface
         throw std::runtime_error("failed to find a suitable GPU!");
     }
 
-    return physicalDevice;
-}
-
-devices::Data devices::createLogical(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice)  {
     queue::FamilyIndices indices = queue::findFamilies(surface, physicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -94,8 +94,8 @@ devices::Data devices::createLogical(VkSurfaceKHR surface, VkPhysicalDevice phys
             .pQueueCreateInfos = queueCreateInfos.data(),
             .queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()),
             .pEnabledFeatures = &deviceFeatures,
-            .enabledExtensionCount = static_cast<uint32_t>(devices::EXTENSIONS.size()),
-            .ppEnabledExtensionNames = devices::EXTENSIONS.data(),
+            .enabledExtensionCount = static_cast<uint32_t>(EXTENSIONS.size()),
+            .ppEnabledExtensionNames = EXTENSIONS.data(),
     };
 
     if (debug::DEBUG) {
@@ -105,24 +105,23 @@ devices::Data devices::createLogical(VkSurfaceKHR surface, VkPhysicalDevice phys
         createInfo.enabledLayerCount = 0;
     }
 
-    devices::Data data = {};
-    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &data.device) != VK_SUCCESS) {
+    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create logical device!");
     }
 
-    vkGetDeviceQueue(data.device, static_cast<uint32_t>(indices.graphicsFamily), 0, &data.graphicsQueue);
-    vkGetDeviceQueue(data.device, static_cast<uint32_t>(indices.presentFamily), 0, &data.presentQueue);
+    vkGetDeviceQueue(logicalDevice_, static_cast<uint32_t>(indices.graphicsFamily), 0, &graphicsQueue_);
+    vkGetDeviceQueue(logicalDevice_, static_cast<uint32_t>(indices.presentFamily), 0, &presentQueue_);
 
-    return data;
+    physicalDevice_ = physicalDevice;
 }
 
-void devices::destroyLogical(VkDevice device) {
-    vkDestroyDevice(device, nullptr);
+Device::~Device() {
+    vkDestroyDevice(logicalDevice_, nullptr);
 }
 
-uint32_t devices::findMemoryType(VkPhysicalDevice physicalDevice, uint32_t filter, VkMemoryPropertyFlags flags) {
+uint32_t Device::findMemoryType(uint32_t filter, VkMemoryPropertyFlags flags) {
     VkPhysicalDeviceMemoryProperties properties = {};
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &properties);
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice_, &properties);
 
     for (uint32_t i = 0; i < properties.memoryTypeCount; i++) {
         if ((filter & (1 << i)) && (properties.memoryTypes[i].propertyFlags & flags) == flags) {

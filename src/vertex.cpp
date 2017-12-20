@@ -1,5 +1,4 @@
 #include "vertex.h"
-#include "devices.h"
 
 Vertex::Vertex(glm::vec3 pos, glm::vec3 color): pos(pos), color(color) {
     // ctor
@@ -7,10 +6,9 @@ Vertex::Vertex(glm::vec3 pos, glm::vec3 color): pos(pos), color(color) {
 
 Vertex::~Vertex() =default;
 
-Buffer* vertex::createBuffer(VkPhysicalDevice physicalDevice, VkDevice device, std::vector<Vertex> vertices) {
+Buffer* vertex::createBuffer(Device& device, std::vector<Vertex> vertices) {
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
     auto buffer = new Buffer(
-            physicalDevice,
             device,
             bufferSize,
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -18,16 +16,11 @@ Buffer* vertex::createBuffer(VkPhysicalDevice physicalDevice, VkDevice device, s
     );
 
     void* data;
-    vkMapMemory(device, buffer->getMemory(), 0, bufferSize, 0, &data);
+    vkMapMemory(device.getLogical(), buffer->getMemory(), 0, bufferSize, 0, &data);
     memcpy(data, vertices.data(), (size_t) bufferSize);
-    vkUnmapMemory(device, buffer->getMemory());
+    vkUnmapMemory(device.getLogical(), buffer->getMemory());
 
     return buffer;
-}
-
-void vertex::destroyBuffer(VkDevice device, VkDeviceMemory memory, VkBuffer buffer) {
-    vkDestroyBuffer(device, buffer, nullptr);
-    vkFreeMemory(device, memory, nullptr);
 }
 
 VkVertexInputBindingDescription vertex::getBindingDescription() {

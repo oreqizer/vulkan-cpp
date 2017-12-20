@@ -1,11 +1,9 @@
 #include <stdexcept>
 
 #include "buffer.h"
-#include "devices.h"
 
 Buffer::Buffer(
-        VkPhysicalDevice physicalDevice,
-        VkDevice device,
+        Device& device,
         VkDeviceSize size,
         VkBufferUsageFlags usage,
         VkMemoryPropertyFlags properties
@@ -18,30 +16,30 @@ Buffer::Buffer(
     };
 
     VkBuffer buffer;
-    if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+    if (vkCreateBuffer(device.getLogical(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to create vertex buffer!");
     }
     VkMemoryRequirements requirements = {};
-    vkGetBufferMemoryRequirements(device, buffer, &requirements);
+    vkGetBufferMemoryRequirements(device.getLogical(), buffer, &requirements);
 
     VkMemoryAllocateInfo allocInfo = {
             .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
             .allocationSize = requirements.size,
-            .memoryTypeIndex = devices::findMemoryType(physicalDevice, requirements.memoryTypeBits, properties),
+            .memoryTypeIndex = device.findMemoryType(requirements.memoryTypeBits, properties),
     };
 
     VkDeviceMemory memory;
-    if (vkAllocateMemory(device, &allocInfo, nullptr, &memory) != VK_SUCCESS) {
+    if (vkAllocateMemory(device.getLogical(), &allocInfo, nullptr, &memory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate vertex buffer memory!");
     }
 
-    vkBindBufferMemory(device, buffer, memory, 0);
+    vkBindBufferMemory(device.getLogical(), buffer, memory, 0);
 
     buffer_ = buffer;
     memory_ = memory;
 }
 
 Buffer::~Buffer() {
-    vkDestroyBuffer(device_, buffer_, nullptr);
-    vkFreeMemory(device_, memory_, nullptr);
+    vkDestroyBuffer(device_.getLogical(), buffer_, nullptr);
+    vkFreeMemory(device_.getLogical(), memory_, nullptr);
 }

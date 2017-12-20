@@ -13,7 +13,7 @@
 #include "debug.h"
 #include "instance.h"
 #include "surface.h"
-#include "devices.h"
+#include "device.h"
 #include "swapchain.h"
 #include "views.h"
 #include "pipeline.h"
@@ -38,11 +38,8 @@ private:
     VkInstance m_instance;
     VkDebugReportCallbackEXT m_callback;
     VkSurfaceKHR m_surface;
-    VkPhysicalDevice m_physicalDevice;
 
-    VkDevice m_device;
-    VkQueue m_graphicsQueue;
-    VkQueue m_presentQueue;
+    Device* device_;
 
     VkSwapchainKHR m_swapchain;
     std::vector<VkImage> m_swapchainImages;
