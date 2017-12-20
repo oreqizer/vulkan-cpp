@@ -7,14 +7,7 @@ Vertex::Vertex(glm::vec3 pos, glm::vec3 color): pos(pos), color(color) {
 
 Vertex::~Vertex() =default;
 
-VkBuffer vertex::createBuffer(VkDevice device) {
-    // TODO get rid of this, make it a param
-    const std::vector<Vertex> vertices = {
-            {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-            {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-            {{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}
-    };
-
+vertex::Data vertex::createBuffer(VkPhysicalDevice physicalDevice, VkDevice device, std::vector<Vertex> vertices) {
     VkBufferCreateInfo bufferInfo = {
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .size = sizeof(vertices[0]) * vertices.size(),
@@ -26,16 +19,6 @@ VkBuffer vertex::createBuffer(VkDevice device) {
     if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to create vertex buffer!");
     }
-
-    return buffer;
-}
-
-void vertex::destroyBuffer(VkDevice device, VkBuffer buffer, VkDeviceMemory memory) {
-    vkDestroyBuffer(device, buffer, nullptr);
-    vkFreeMemory(device, memory, nullptr);
-}
-
-VkDeviceMemory vertex::createMemory(VkPhysicalDevice physicalDevice, VkDevice device, VkBuffer buffer) {
     VkMemoryRequirements requirements = {};
     vkGetBufferMemoryRequirements(device, buffer, &requirements);
 
@@ -55,7 +38,21 @@ VkDeviceMemory vertex::createMemory(VkPhysicalDevice physicalDevice, VkDevice de
     }
 
     vkBindBufferMemory(device, buffer, memory, 0);
-    return memory;
+
+    void* data;
+    vkMapMemory(device, memory, 0, bufferInfo.size, 0, &data);
+    memcpy(data, vertices.data(), (size_t) bufferInfo.size);
+    vkUnmapMemory(device, memory);
+
+    return {
+            .buffer = buffer,
+            .memory = memory,
+    };
+}
+
+void vertex::destroyBuffer(VkDevice device, VkDeviceMemory memory, VkBuffer buffer) {
+    vkDestroyBuffer(device, buffer, nullptr);
+    vkFreeMemory(device, memory, nullptr);
 }
 
 VkVertexInputBindingDescription vertex::getBindingDescription() {

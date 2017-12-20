@@ -1,5 +1,12 @@
 #include "engine.h"
 
+// TODO load from file
+const std::vector<Vertex> vertices = {
+        {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+        {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+        {{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}
+};
+
 Engine::Engine() {
     m_window = initWindow();
     m_instance = instance::create();
@@ -27,8 +34,11 @@ Engine::Engine() {
 
     m_framebuffers = framebuffers::create(m_device, m_swapchainExtent, m_swapchainImageViews, m_renderPass);
     m_commandPool = commands::createPool(m_surface, m_physicalDevice, m_device);
-    m_vertexBuffer = vertex::createBuffer(m_device);
-    m_vertexBufferMemory = vertex::createMemory(m_physicalDevice, m_device, m_vertexBuffer);
+
+    auto vertexData= vertex::createBuffer(m_physicalDevice, m_device, vertices);
+    m_vertexBuffer = vertexData.buffer;
+    m_vertexBufferMemory = vertexData.memory;
+
     m_commandBuffers = commands::createBuffers(
             m_device,
             m_swapchainExtent,
@@ -47,7 +57,7 @@ Engine::~Engine() {
     semaphore::destroy(m_device, m_semaphoreRenderFinished);
     semaphore::destroy(m_device, m_semaphoreImageAvailable);
     swapchainCleanup();
-    vertex::destroyBuffer(m_device, m_vertexBuffer, m_vertexBufferMemory);
+    vertex::destroyBuffer(m_device, m_vertexBufferMemory, m_vertexBuffer);
     commands::destroyPool(m_device, m_commandPool);
     devices::destroyLogical(m_device);
     debug::destroyCallback(m_instance, m_callback);

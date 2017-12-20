@@ -15,9 +15,13 @@ struct Vertex {
 };
 
 namespace vertex {
-    VkBuffer createBuffer(VkDevice device);
-    void destroyBuffer(VkDevice device, VkBuffer buffer, VkDeviceMemory memory);
-    VkDeviceMemory createMemory(VkPhysicalDevice physicalDevice, VkDevice device, VkBuffer buffer);
+    struct Data {
+        VkBuffer buffer;
+        VkDeviceMemory memory;
+    };
+
+    Data createBuffer(VkPhysicalDevice physicalDevice, VkDevice device, std::vector<Vertex> vertices);
+    void destroyBuffer(VkDevice device, VkDeviceMemory memory, VkBuffer buffer);
     VkVertexInputBindingDescription getBindingDescription();
     std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
 }
