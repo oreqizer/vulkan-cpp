@@ -3,18 +3,17 @@
 
 #include <vulkan/vulkan.h>
 
-namespace queue {
-    class FamilyIndices {
-    public:
-        int graphicsFamily = -1;
-        int presentFamily = -1;
+class Queue {
+public:
+    Queue(VkSurfaceKHR surface, VkPhysicalDevice device);
 
-        inline bool isComplete() {
-            return graphicsFamily >= 0 && presentFamily >= 0;
-        }
-    };
+    const bool isComplete() const;
 
-    FamilyIndices findFamilies(VkSurfaceKHR surface, VkPhysicalDevice device);
-}
+    const uint32_t getPresentFamily() const { return presentFamily_; }
+    const uint32_t getGraphicsFamily() const { return graphicsFamily_; }
+private:
+    uint32_t presentFamily_ = 0;
+    uint32_t graphicsFamily_ = 0;
+};
 
 #endif //VULKAN_CPP_QUEUE_H

@@ -3,30 +3,32 @@
 
 #include <vector>
 
-namespace swapchain {
-    struct Data {
-        VkSwapchainKHR instance;
-        std::vector<VkImage> images;
-        VkFormat format;
-        VkExtent2D extent;
-    };
+#include "device.h"
 
-    struct SupportDetails {
-        VkSurfaceCapabilitiesKHR capabilities;
-        std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
-    };
+class Swapchain {
+public:
+    Swapchain(VkSurfaceKHR surface, Device& device, uint32_t width, uint32_t height);
+    ~Swapchain();
 
-    Data setup(
-            VkSurfaceKHR surface,
-            VkPhysicalDevice physicalDevice,
-            VkDevice device,
-            uint32_t width,
-            uint32_t height
-    );
-    void destroy(VkDevice device, VkSwapchainKHR swapchain);
+    static const bool isAdequate(VkSurfaceKHR surface, VkPhysicalDevice device);
 
-    SupportDetails querySupport(VkSurfaceKHR surface, VkPhysicalDevice device);
-}
+    const VkSwapchainKHR& getSwapchain() const { return swapchain_; }
+    const std::vector<VkImage>& getImages() const { return images_; }
+    const VkFormat& getFormat() const { return format_; }
+    const VkExtent2D& getExtent() const { return extent_; }
+    const VkSurfaceCapabilitiesKHR& getCapabilities() const { return capabilities_; }
+    const std::vector<VkSurfaceFormatKHR>& getFormats() const { return formats_; }
+    const std::vector<VkPresentModeKHR>& getPresentModes() const { return presentModes_; }
+
+private:
+    Device& device_;
+    VkSwapchainKHR swapchain_;
+    VkFormat format_;
+    VkExtent2D extent_;
+    VkSurfaceCapabilitiesKHR capabilities_;
+    std::vector<VkImage> images_;
+    std::vector<VkSurfaceFormatKHR> formats_;
+    std::vector<VkPresentModeKHR> presentModes_;
+};
 
 #endif //VULKAN_CPP_SWAP_CHAIN_H

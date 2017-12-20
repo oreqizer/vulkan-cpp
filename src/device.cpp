@@ -4,7 +4,6 @@
 #include <string>
 
 #include "device.h"
-#include "queue.h"
 #include "swapchain.h"
 #include "debug.h"
 
@@ -12,37 +11,6 @@ namespace {
     const std::vector<const char*> EXTENSIONS = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     };
-
-    bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
-        uint32_t extensionCount;
-        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-
-        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
-
-        std::set<std::string> requiredExtensions(EXTENSIONS.begin(), EXTENSIONS.end());
-
-        for (const auto& extension : availableExtensions) {
-            requiredExtensions.erase(extension.extensionName);
-        }
-
-        return requiredExtensions.empty();
-    }
-
-    bool isDeviceSuitable(VkSurfaceKHR surface, VkPhysicalDevice device) {
-        // normally would also do a feature check here
-        // this checks just queue families
-        queue::FamilyIndices indices = queue::findFamilies(surface, device);
-        bool extensionsSupported = checkDeviceExtensionSupport(device);
-
-        bool swapchainAdequate = false;
-        if (extensionsSupported) {
-            swapchain::SupportDetails swapChainSupport = swapchain::querySupport(surface, device);
-            swapchainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
-        }
-
-        return indices.isComplete() && extensionsSupported && swapchainAdequate;
-    }
 }
 
 Device::Device(VkInstance instance, VkSurfaceKHR surface) {
@@ -57,7 +25,10 @@ Device::Device(VkInstance instance, VkSurfaceKHR surface) {
 
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     for (const auto& device : devices) {
-        if (isDeviceSuitable(surface, device)) {
+        queue_ = new Queue(surface, device);
+        // normally would also do a feature check here
+        // this checks just queue families
+        if (queue_->isComplete() && Device::isAdequate(device) && Swapchain::isAdequate(surface, device)) {
             physicalDevice = device;
             break;
         }
@@ -67,13 +38,10 @@ Device::Device(VkInstance instance, VkSurfaceKHR surface) {
         throw std::runtime_error("failed to find a suitable GPU!");
     }
 
-    queue::FamilyIndices indices = queue::findFamilies(surface, physicalDevice);
+    physicalDevice_ = physicalDevice;
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = {
-            static_cast<uint32_t>(indices.graphicsFamily),
-            static_cast<uint32_t>(indices.presentFamily),
-    };
+    std::set<uint32_t> uniqueQueueFamilies = {queue_->getGraphicsFamily(), queue_->getPresentFamily()};
 
     float queuePriority = 1.0f;
     for (auto queueFamily : uniqueQueueFamilies) {
@@ -109,17 +77,31 @@ Device::Device(VkInstance instance, VkSurfaceKHR surface) {
         throw std::runtime_error("failed to create logical device!");
     }
 
-    vkGetDeviceQueue(logicalDevice_, static_cast<uint32_t>(indices.graphicsFamily), 0, &graphicsQueue_);
-    vkGetDeviceQueue(logicalDevice_, static_cast<uint32_t>(indices.presentFamily), 0, &presentQueue_);
-
-    physicalDevice_ = physicalDevice;
+    vkGetDeviceQueue(logicalDevice_, queue_->getGraphicsFamily(), 0, &graphicsQueue_);
+    vkGetDeviceQueue(logicalDevice_, queue_->getPresentFamily(), 0, &presentQueue_);
 }
 
 Device::~Device() {
     vkDestroyDevice(logicalDevice_, nullptr);
 }
 
-uint32_t Device::findMemoryType(uint32_t filter, VkMemoryPropertyFlags flags) {
+const bool Device::isAdequate(VkPhysicalDevice device) {
+    uint32_t extensionCount;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+    std::set<std::string> requiredExtensions(EXTENSIONS.begin(), EXTENSIONS.end());
+
+    for (const auto& extension : availableExtensions) {
+        requiredExtensions.erase(extension.extensionName);
+    }
+
+    return requiredExtensions.empty();
+}
+
+uint32_t Device::findMemoryType(uint32_t filter, VkMemoryPropertyFlags flags) const {
     VkPhysicalDeviceMemoryProperties properties = {};
     vkGetPhysicalDeviceMemoryProperties(physicalDevice_, &properties);
 

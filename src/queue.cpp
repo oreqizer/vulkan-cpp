@@ -2,9 +2,7 @@
 
 #include "queue.h"
 
-queue::FamilyIndices queue::findFamilies(VkSurfaceKHR surface, VkPhysicalDevice device) {
-    queue::FamilyIndices indices;
-
+Queue::Queue(VkSurfaceKHR surface, VkPhysicalDevice device) {
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
@@ -16,19 +14,21 @@ queue::FamilyIndices queue::findFamilies(VkSurfaceKHR surface, VkPhysicalDevice 
         auto presentSupport = static_cast<VkBool32>(false);
         vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
         if (queueFamily.queueCount > 0 && presentSupport) {
-            indices.presentFamily = i;
+            presentFamily_ = i;
         }
 
         if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-            indices.graphicsFamily = i;
+            graphicsFamily_ = i;
         }
 
-        if (indices.isComplete()) {
+        if (graphicsFamily_ >= 0 && presentFamily_ >= 0) {
             break;
         }
 
         i++;
     }
+}
 
-    return indices;
+inline const bool Queue::isComplete() const {
+    return graphicsFamily_ > 0 && presentFamily_ > 0;
 }

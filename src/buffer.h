@@ -15,8 +15,8 @@ public:
     );
     ~Buffer();
 
-    inline const auto getBuffer() { return buffer_; }
-    inline const auto getMemory() { return memory_; }
+    const auto getBuffer() const { return buffer_; }
+    const auto getMemory() const { return memory_; }
 private:
     Device& device_;
     VkBuffer buffer_;

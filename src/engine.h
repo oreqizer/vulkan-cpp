@@ -40,11 +40,7 @@ private:
     VkSurfaceKHR m_surface;
 
     Device* device_;
-
-    VkSwapchainKHR m_swapchain;
-    std::vector<VkImage> m_swapchainImages;
-    VkFormat m_swapchainImageFormat;
-    VkExtent2D m_swapchainExtent;
+    Swapchain* swapchain_;
 
     std::vector<VkImageView> m_swapchainImageViews;
 
