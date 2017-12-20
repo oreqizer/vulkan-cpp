@@ -4,6 +4,8 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
+#include "vertex.h"
+
 namespace commands {
     VkCommandPool createPool(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device);
     void destroyPool(VkDevice device, VkCommandPool pool);
@@ -14,6 +16,8 @@ namespace commands {
             VkPipeline pipeline,
             std::vector<VkFramebuffer> framebuffers,
             VkCommandPool pool,
+            VkBuffer vertexBuffer,
+            std::vector<Vertex> vertices,
             uint64_t count
     );
     void destroyBuffers(VkDevice device, VkCommandPool pool, std::vector<VkCommandBuffer> buffers);

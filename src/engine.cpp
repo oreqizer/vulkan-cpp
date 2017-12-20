@@ -2,7 +2,7 @@
 
 // TODO load from file
 const std::vector<Vertex> vertices = {
-        {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+        {{0.0f, -0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}},
         {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
         {{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}
 };
@@ -46,6 +46,8 @@ Engine::Engine() {
             m_pipeline,
             m_framebuffers,
             m_commandPool,
+            m_vertexBuffer,
+            vertices,
             m_framebuffers.size()
     );
 
@@ -153,6 +155,8 @@ void Engine::swapchainRecreate() {
             m_pipeline,
             m_framebuffers,
             m_commandPool,
+            m_vertexBuffer,
+            vertices,
             m_framebuffers.size()
     );
 }
