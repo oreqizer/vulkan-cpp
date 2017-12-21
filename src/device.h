@@ -14,14 +14,14 @@ public:
 
     uint32_t findMemoryType(uint32_t filter, VkMemoryPropertyFlags flags) const;
 
-    const VkPhysicalDevice getPhysical() const { return physicalDevice_; }
-    const VkDevice getLogical() const { return logicalDevice_; }
+    const VkPhysicalDevice getPhysical() const { return physical_; }
+    const VkDevice getLogical() const { return logical_; }
     const Queue& getQueue() const { return *queue_; }
     const VkQueue getGraphicsQueue() const { return graphicsQueue_; }
     const VkQueue getPresentQueue() const { return presentQueue_; }
 private:
-    VkPhysicalDevice physicalDevice_;
-    VkDevice logicalDevice_;
+    VkPhysicalDevice physical_;
+    VkDevice logical_;
     Queue* queue_;
     VkQueue graphicsQueue_;
     VkQueue presentQueue_;

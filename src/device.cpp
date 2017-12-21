@@ -38,7 +38,7 @@ Device::Device(VkInstance instance, VkSurfaceKHR surface) {
         throw std::runtime_error("failed to find a suitable GPU!");
     }
 
-    physicalDevice_ = physicalDevice;
+    physical_ = physicalDevice;
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = {queue_->getGraphicsFamily(), queue_->getPresentFamily()};
@@ -73,16 +73,16 @@ Device::Device(VkInstance instance, VkSurfaceKHR surface) {
         createInfo.enabledLayerCount = 0;
     }
 
-    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice_) != VK_SUCCESS) {
+    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logical_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create logical device!");
     }
 
-    vkGetDeviceQueue(logicalDevice_, queue_->getGraphicsFamily(), 0, &graphicsQueue_);
-    vkGetDeviceQueue(logicalDevice_, queue_->getPresentFamily(), 0, &presentQueue_);
+    vkGetDeviceQueue(logical_, queue_->getGraphicsFamily(), 0, &graphicsQueue_);
+    vkGetDeviceQueue(logical_, queue_->getPresentFamily(), 0, &presentQueue_);
 }
 
 Device::~Device() {
-    vkDestroyDevice(logicalDevice_, nullptr);
+    vkDestroyDevice(logical_, nullptr);
 }
 
 const bool Device::isAdequate(VkPhysicalDevice device) {
@@ -103,7 +103,7 @@ const bool Device::isAdequate(VkPhysicalDevice device) {
 
 uint32_t Device::findMemoryType(uint32_t filter, VkMemoryPropertyFlags flags) const {
     VkPhysicalDeviceMemoryProperties properties = {};
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice_, &properties);
+    vkGetPhysicalDeviceMemoryProperties(physical_, &properties);
 
     for (uint32_t i = 0; i < properties.memoryTypeCount; i++) {
         if ((filter & (1 << i)) && (properties.memoryTypes[i].propertyFlags & flags) == flags) {
