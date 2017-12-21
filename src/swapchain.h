@@ -13,12 +13,13 @@ public:
     static const bool isAdequate(VkSurfaceKHR surface, VkPhysicalDevice device);
 
     const VkSwapchainKHR& getSwapchain() const { return swapchain_; }
-    const std::vector<VkImage>& getImages() const { return images_; }
     const VkFormat& getFormat() const { return format_; }
     const VkExtent2D& getExtent() const { return extent_; }
     const VkSurfaceCapabilitiesKHR& getCapabilities() const { return capabilities_; }
     const std::vector<VkSurfaceFormatKHR>& getFormats() const { return formats_; }
     const std::vector<VkPresentModeKHR>& getPresentModes() const { return presentModes_; }
+    const std::vector<VkImage>& getImages() const { return images_; }
+    const std::vector<VkImageView>& getImageViews() const { return imageViews_; }
 
 private:
     Device& device_;
@@ -26,9 +27,10 @@ private:
     VkFormat format_;
     VkExtent2D extent_;
     VkSurfaceCapabilitiesKHR capabilities_;
-    std::vector<VkImage> images_;
     std::vector<VkSurfaceFormatKHR> formats_;
     std::vector<VkPresentModeKHR> presentModes_;
+    std::vector<VkImage> images_;
+    std::vector<VkImageView> imageViews_;
 };
 
 #endif //VULKAN_CPP_SWAP_CHAIN_H

@@ -21,7 +21,7 @@ Queue::Queue(VkSurfaceKHR surface, VkPhysicalDevice device) {
             graphicsFamily_ = i;
         }
 
-        if (graphicsFamily_ >= 0 && presentFamily_ >= 0) {
+        if (graphicsFamily_ != UINT32_MAX && presentFamily_ != UINT32_MAX) {
             break;
         }
 
@@ -29,6 +29,6 @@ Queue::Queue(VkSurfaceKHR surface, VkPhysicalDevice device) {
     }
 }
 
-inline const bool Queue::isComplete() const {
-    return graphicsFamily_ > 0 && presentFamily_ > 0;
+const bool Queue::isComplete() const {
+    return graphicsFamily_ != UINT32_MAX && presentFamily_ != UINT32_MAX;
 }

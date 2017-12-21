@@ -4,12 +4,13 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
+#include "device.h"
+#include "swapchain.h"
+
 namespace frame {
     VkResult draw(
-            VkDevice device,
-            VkQueue graphicsQueue,
-            VkQueue presentQueue,
-            VkSwapchainKHR swapchain,
+            Device& device,
+            Swapchain& swapchain,
             std::vector<VkCommandBuffer> buffers,
             VkSemaphore semaphoreImageAvailable,
             VkSemaphore semaphoreRenderFinished

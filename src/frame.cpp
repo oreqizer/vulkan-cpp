@@ -1,20 +1,19 @@
 #include <limits>
+#include <iostream>
 
 #include "frame.h"
 
 VkResult frame::draw(
-        VkDevice device,
-        VkQueue graphicsQueue,
-        VkQueue presentQueue,
-        VkSwapchainKHR swapchain,
+        Device& device,
+        Swapchain& swapchain,
         std::vector<VkCommandBuffer> buffers,
         VkSemaphore semaphoreImageAvailable,
         VkSemaphore semaphoreRenderFinished
 ) {
     uint32_t imageIndex;
     auto result = vkAcquireNextImageKHR(
-            device,
-            swapchain,
+            device.getLogical(),
+            swapchain.getSwapchain(),
             std::numeric_limits<uint64_t>::max(), // timeout, uint64_t max means none
             semaphoreImageAvailable, // sync semaphore
             VK_NULL_HANDLE, // fence, none since we're using semaphores
@@ -42,11 +41,11 @@ VkResult frame::draw(
     };
 
     // last parameter is a fence
-    if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+    if (vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
-    VkSwapchainKHR swapChains[] = {swapchain};
+    VkSwapchainKHR swapChains[] = {swapchain.getSwapchain()};
     VkPresentInfoKHR presentInfo = {
             .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
             .waitSemaphoreCount = 1,
@@ -57,8 +56,8 @@ VkResult frame::draw(
             .pResults = nullptr, // optional
     };
 
-    vkQueuePresentKHR(presentQueue, &presentInfo);
-    vkQueueWaitIdle(presentQueue); // sync with the GPU
+    vkQueuePresentKHR(device.getPresentQueue(), &presentInfo);
+    vkQueueWaitIdle(device.getPresentQueue()); // sync with the GPU
 
     return result;
 }

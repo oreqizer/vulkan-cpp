@@ -71,7 +71,8 @@ Swapchain::Swapchain(VkSurfaceKHR surface, Device& device, uint32_t width, uint3
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(formats_);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(presentModes_);
-    VkExtent2D extent = chooseSwapExtent(capabilities_, width, height);
+    extent_ = chooseSwapExtent(capabilities_, width, height);
+    format_ = surfaceFormat.format;
 
     uint32_t imageCount = capabilities_.minImageCount + 1;
     if (capabilities_.maxImageCount > 0 && imageCount > capabilities_.maxImageCount) {
@@ -84,7 +85,7 @@ Swapchain::Swapchain(VkSurfaceKHR surface, Device& device, uint32_t width, uint3
             .minImageCount = imageCount,
             .imageFormat = surfaceFormat.format,
             .imageColorSpace = surfaceFormat.colorSpace,
-            .imageExtent = extent,
+            .imageExtent = extent_,
             .imageArrayLayers = 1,
             .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
             .preTransform = capabilities_.currentTransform,
@@ -113,13 +114,40 @@ Swapchain::Swapchain(VkSurfaceKHR surface, Device& device, uint32_t width, uint3
 
     vkGetSwapchainImagesKHR(device.getLogical(), swapchain_, &imageCount, nullptr);
     images_.resize(imageCount);
+    imageViews_.resize(imageCount);
     vkGetSwapchainImagesKHR(device.getLogical(), swapchain_, &imageCount, images_.data());
 
-    format_ = surfaceFormat.format;
-    extent_ = extent;
+    uint32_t i = 0;
+    for (auto image : images_) {
+        VkImageViewCreateInfo imageViewInfo = {
+                .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                .image = image,
+                .viewType = VK_IMAGE_VIEW_TYPE_2D,
+                .format = format_,
+                .components.r = VK_COMPONENT_SWIZZLE_IDENTITY,
+                .components.g = VK_COMPONENT_SWIZZLE_IDENTITY,
+                .components.b = VK_COMPONENT_SWIZZLE_IDENTITY,
+                .components.a = VK_COMPONENT_SWIZZLE_IDENTITY,
+                .subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .subresourceRange.baseMipLevel = 0,
+                .subresourceRange.levelCount = 1,
+                .subresourceRange.baseArrayLayer = 0,
+                .subresourceRange.layerCount = 1,
+        };
+
+        if (vkCreateImageView(device.getLogical(), &imageViewInfo, nullptr, &imageViews_[i]) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create image views!");
+        }
+
+        i++;
+    }
 }
 
 Swapchain::~Swapchain() {
+    for (auto imageView : imageViews_) {
+        vkDestroyImageView(device_.getLogical(), imageView, nullptr);
+    }
+
     vkDestroySwapchainKHR(device_.getLogical(), swapchain_, nullptr);
 }
 

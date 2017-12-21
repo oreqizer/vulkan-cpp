@@ -7,7 +7,7 @@
 #include "vertex.h"
 
 namespace commands {
-    VkCommandPool createPool(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device);
+    VkCommandPool createPool(VkSurfaceKHR surface, Device& device);
     void destroyPool(VkDevice device, VkCommandPool pool);
     std::vector<VkCommandBuffer> createBuffers(
             VkDevice device,

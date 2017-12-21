@@ -12,8 +12,8 @@ public:
     const uint32_t getPresentFamily() const { return presentFamily_; }
     const uint32_t getGraphicsFamily() const { return graphicsFamily_; }
 private:
-    uint32_t presentFamily_ = 0;
-    uint32_t graphicsFamily_ = 0;
+    uint32_t presentFamily_ = UINT32_MAX;
+    uint32_t graphicsFamily_ = UINT32_MAX;
 };
 
 #endif //VULKAN_CPP_QUEUE_H

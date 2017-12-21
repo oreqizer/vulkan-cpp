@@ -15,7 +15,6 @@
 #include "surface.h"
 #include "device.h"
 #include "swapchain.h"
-#include "views.h"
 #include "pipeline.h"
 #include "framebuffers.h"
 #include "commands.h"
@@ -41,8 +40,6 @@ private:
 
     Device* device_;
     Swapchain* swapchain_;
-
-    std::vector<VkImageView> m_swapchainImageViews;
 
     VkRenderPass m_renderPass;
     VkPipelineLayout m_pipelineLayout;

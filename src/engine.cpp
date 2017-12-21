@@ -12,17 +12,18 @@ Engine::Engine() {
     m_instance = instance::create();
     m_callback = debug::setupCallback(m_instance);
     m_surface = surface::create(m_instance, m_window);
+
     device_ = new Device(m_instance, m_surface);
     swapchain_ = new Swapchain(m_surface, *device_, WIDTH, HEIGHT);
-    m_swapchainImageViews = views::create(device_->getLogical(), swapchain_->getImages(), swapchain_->getFormat());
+
     m_renderPass = pipeline::createRenderPass(device_->getLogical(), swapchain_->getFormat());
 
     auto pipelineData = pipeline::create(device_->getLogical(), swapchain_->getExtent(), m_renderPass);
     m_pipelineLayout = pipelineData.layout;
     m_pipeline = pipelineData.instance;
 
-    m_framebuffers = framebuffers::create(device_->getLogical(), swapchain_->getExtent(), m_swapchainImageViews, m_renderPass);
-    m_commandPool = commands::createPool(m_surface, device_->getPhysical(), device_->getLogical());
+    m_framebuffers = framebuffers::create(device_->getLogical(), swapchain_->getExtent(), swapchain_->getImageViews(), m_renderPass);
+    m_commandPool = commands::createPool(m_surface, *device_);
     m_vertexBuffer = vertex::createBuffer(*device_, vertices);
     m_commandBuffers = commands::createBuffers(
             device_->getLogical(),
@@ -58,10 +59,8 @@ void Engine::Run() {
     while (!glfwWindowShouldClose(m_window)) {
         glfwPollEvents();
         auto result = frame::draw(
-                device_->getLogical(),
-                device_->getGraphicsQueue(),
-                device_->getPresentQueue(),
-                swapchain_->getSwapchain(),
+                *device_,
+                *swapchain_,
                 m_commandBuffers,
                 m_semaphoreImageAvailable,
                 m_semaphoreRenderFinished
@@ -115,14 +114,13 @@ void Engine::swapchainRecreate() {
     glfwGetWindowSize(m_window, &width, &height);
     swapchain_ = new Swapchain(m_surface, *device_, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 
-    m_swapchainImageViews = views::create(device_->getLogical(), swapchain_->getImages(), swapchain_->getFormat());
     m_renderPass = pipeline::createRenderPass(device_->getLogical(), swapchain_->getFormat());
 
     auto pipelineData = pipeline::create(device_->getLogical(), swapchain_->getExtent(), m_renderPass);
     m_pipelineLayout = pipelineData.layout;
     m_pipeline = pipelineData.instance;
 
-    m_framebuffers = framebuffers::create(device_->getLogical(), swapchain_->getExtent(), m_swapchainImageViews, m_renderPass);
+    m_framebuffers = framebuffers::create(device_->getLogical(), swapchain_->getExtent(), swapchain_->getImageViews(), m_renderPass);
     m_commandBuffers = commands::createBuffers(
             device_->getLogical(),
             swapchain_->getExtent(),
@@ -141,6 +139,5 @@ void Engine::swapchainCleanup() {
     framebuffers::destroy(device_->getLogical(), m_framebuffers);
     pipeline::destroy(device_->getLogical(), m_pipelineLayout, m_pipeline);
     pipeline::destroyRenderPass(device_->getLogical(), m_renderPass);
-    views::destroy(device_->getLogical(), m_swapchainImageViews);
     free(swapchain_);
 }
